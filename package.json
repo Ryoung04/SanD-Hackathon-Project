@@ -10,7 +10,9 @@
     "test:ui": "node --import tsx --test tests/ui/*.test.ts",
     "typecheck": "tsc --noEmit",
     "ingest": "tsx --env-file-if-exists=.env.local --conditions=react-server scripts/ingest/run-all.ts",
-    "coverage": "tsx --env-file-if-exists=.env.local --conditions=react-server scripts/ingest/check-coverage.ts"
+    "coverage": "tsx --env-file-if-exists=.env.local --conditions=react-server scripts/ingest/check-coverage.ts",
+    "ai:notice": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/notice-pipeline.ts",
+    "ai:image": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/analyze-sample.ts"
   },
   "dependencies": {
     "@neon/config": "^1.14.0",
@@ -21,7 +23,8 @@
     "next": "^14.2.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.12",

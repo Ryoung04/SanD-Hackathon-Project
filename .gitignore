@@ -6,3 +6,11 @@ data/raw/
 data/observations.json
 *.tsbuildinfo
 .neon
+
+# owner C additions
+.env.*
+!.env.example
+dist/
+out/
+*.log
+.DS_Store
