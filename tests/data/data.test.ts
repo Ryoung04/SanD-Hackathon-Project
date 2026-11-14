@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { normalizeProwagRamp, normalizeTrafficControl, normalize311Row, sanitizeText, validateObservation, pacificToUtcIso } from '@/lib/data/normalizers';
 import { parseBbox, intersectsBbox, distanceToLine, haversineMeters } from '@/lib/data/geo';
-import { listObservations, upsertObservations, findNearRoute } from '@/lib/data/observations';
+import { listObservations, upsertObservations, findNearRoute, markOutdated } from '@/lib/data/observations';
 import type { BarrierObservation } from '@/lib/data/types';
 
 // NOTE: all fixtures below are TEST FIXTURES copying record shapes from docs/source-audit.md; never served as data.
@@ -57,6 +57,23 @@ describe('store', () => {
     const r = await listObservations({ bbox });
     expect(r.data.map((o) => o.id)).toContain('x:line');
     expect(intersectsBbox({ type: 'Point', coordinates: [-117.2, 32.72] }, bbox)).toBe(false);
+  });
+  it('records missing from the latest import are marked outdated and hidden', async () => {
+    await upsertObservations([mk(), mk({ id: 'city_gis:prowag2:9999', source_record_id: '9999' })]);
+    expect(await markOutdated('city_gis', [])).toBe(0); // empty fetch never expires a source
+    expect(await markOutdated('city_gis', ['city_gis:prowag2:2960'])).toBe(1);
+    const r = await listObservations({ bbox });
+    expect(r.data.map((o) => o.id)).toEqual(['city_gis:prowag2:2960']);
+    await expect(markOutdated('street_imagery_ai', ['x'])).rejects.toThrow();
+  });
+  it('traffic permits past date_end are hidden; active ones shown', async () => {
+    const base = mk({ source_kind: 'traffic_control', category: 'construction_warning', verification_status: 'official_inventory' });
+    await upsertObservations([
+      { ...base, id: 'traffic_control:1', source_record_id: '1', metadata: { date_end: '2020-01-01T00:00:00.000Z' } },
+      { ...base, id: 'traffic_control:2', source_record_id: '2', metadata: { date_end: '2099-01-01T00:00:00.000Z' } },
+    ]);
+    const r = await listObservations({ bbox });
+    expect(r.data.map((o) => o.id)).toEqual(['traffic_control:2']);
   });
   it('near-route finds close points only', async () => {
     await upsertObservations([mk()]);

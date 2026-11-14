@@ -64,6 +64,8 @@ export async function listObservations(opts: { bbox: Bbox; categories?: Category
          WHERE min_lon <= $3 AND max_lon >= $1 AND min_lat <= $4 AND max_lat >= $2
            AND ($5::text[] IS NULL OR category = ANY($5::text[]))
            AND id > $6
+           AND verification_status <> 'outdated'
+           AND NOT (source_kind = 'traffic_control' AND (metadata_json->>'date_end')::timestamptz < NOW())
          ORDER BY id LIMIT $7`,
         [bbox[0], bbox[1], bbox[2], bbox[3], categories && categories.length ? categories : null, after, batch],
       )) as any[];
@@ -78,7 +80,7 @@ export async function listObservations(opts: { bbox: Bbox; categories?: Category
     const s = readStore();
     dataMode = s.data_mode;
     matched = s.observations
-      .filter((o) => (!cursor || o.id > cursor) && (!categories?.length || categories.includes(o.category)) && intersectsBbox(o.geometry, bbox))
+      .filter((o) => isCurrent(o) && (!cursor || o.id > cursor) && (!categories?.length || categories.includes(o.category)) && intersectsBbox(o.geometry, bbox))
       .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   }
 
@@ -86,6 +88,47 @@ export async function listObservations(opts: { bbox: Bbox; categories?: Category
   const res: ListResult = { data: page, data_mode: dataMode };
   if (matched.length > limit) res.next_cursor = page[page.length - 1].id;
   return res;
+}
+
+/** Hidden from reads: records marked outdated, and traffic permits whose end date has passed. */
+export function isCurrent(o: BarrierObservation, now = Date.now()): boolean {
+  if (o.verification_status === 'outdated') return false;
+  const end = o.source_kind === 'traffic_control' ? (o.metadata as any)?.date_end : null;
+  return !(end && Date.parse(end) < now);
+}
+
+/** Only official/311 feeds are re-synced wholesale; AI/community records are never auto-expired here. */
+const SYNCED_KINDS = ['city_gis', 'traffic_control', 'city_311'];
+
+/**
+ * Marks records of `sourceKind` that are absent from the latest successful import as `outdated`
+ * (e.g. 311 reports no longer in the open-reports file, permits no longer active).
+ * Refuses an empty `currentIds` so a failed/empty fetch can't expire a whole source.
+ */
+export async function markOutdated(sourceKind: string, currentIds: string[]): Promise<number> {
+  if (!SYNCED_KINDS.includes(sourceKind)) throw new Error(`markOutdated not allowed for ${sourceKind}`);
+  if (currentIds.length === 0) return 0;
+  const sql = getSql();
+  if (sql) {
+    const rows = (await sql(
+      `UPDATE barrier_observations SET verification_status = 'outdated'
+       WHERE source_kind = $1 AND verification_status <> 'outdated' AND NOT (id = ANY($2::text[]))
+       RETURNING id`,
+      [sourceKind, currentIds],
+    )) as any[];
+    return rows.length;
+  }
+  const keep = new Set(currentIds);
+  const s = readStore();
+  let n = 0;
+  for (const o of s.observations) {
+    if (o.source_kind === sourceKind && o.verification_status !== 'outdated' && !keep.has(o.id)) {
+      o.verification_status = 'outdated';
+      n++;
+    }
+  }
+  if (n) writeStore(s);
+  return n;
 }
 
 function guardrail(o: BarrierObservation): string | null {

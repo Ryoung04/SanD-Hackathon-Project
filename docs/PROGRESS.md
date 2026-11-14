@@ -1,5 +1,12 @@
 # Progress
 
+## Owner B — Sprint 2 routing + warnings (2026-11-14)
+- **Outcome:** `POST /api/route` → Valhalla public server (`pedestrian`, `type: wheelchair` when preferred; override with `VALHALLA_URL`). Returns real geometry/distance/time or `status:"unavailable"`, never a straight line. Near-route warnings use A's `findNearRoute` (30 m, approximate), grouped in the UI as official / resident-reported / AI / other. Rerouting is off (warning-only; `avoid_barrier_ids` ignored). UI: `RoutePlanner` (lat,lon inputs + pick-on-map, preference select), route line plus A/B pins on the map. All CSS colors are now `:root` tokens, the hook for future themes.
+- **Files:** `src/lib/routing/provider.ts`, `src/app/api/route/route.ts`, `src/lib/ui/routeClient.ts`, `src/components/RoutePlanner.tsx`, `src/components/MapView.tsx`, `src/app/page.tsx`, `src/app/globals.css`, `tests/ui/{routing,routeClient}.test.ts`.
+- **Tests:** `npm run test:ui` 44 pass; `npm test` 12 pass; typecheck and build pass. Live: real route 995 m, 15 nearby 311 records after `npm run ingest`; with the provider unreachable → `unavailable`.
+- **Not verified:** UI not yet clicked through in a browser. The local store needs `npm run ingest` (data is gitignored).
+- **Next:** browser run-through; address/place search (currently lat,lon); optional second-route comparison only if two real provider routes exist.
+
 ## Owner B — Sprint 0/1 shell (2026-11-14)
 - **Outcome:** Next.js + TS + Leaflet scaffold. Map refetches `/api/barriers?bbox=` on pan (350 ms debounce, grid-snapped cache). Has an evidence panel with the required caveat wording, a source legend with layer toggles (glyph + text, not color only), and a keyboard observation list. Fixture fallback shows a banner and badges; there is a "Coverage incomplete" notice.
 - **Files:** `package.json`, `tsconfig.json`, `next.config.mjs`, `src/app/{layout,page}.tsx`, `src/app/globals.css`, `src/components/{MapView,BarrierDetail,SourceLegend,ObservationList}.tsx`, `src/lib/ui/{barrierTypes,caveats,barrierClient,fixtures}.ts`, `tests/ui/*.test.ts`, `docs/OWNER_B_REQUESTS.md`.
