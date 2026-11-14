@@ -1,0 +1,83 @@
+{
+  "ran_at": "2026-11-14T20:35:14.171Z",
+  "elapsed_ms": 7841,
+  "brief": {
+    "barrier_id": "city_gis:prowag2:3575",
+    "summary": "This intersection is identified in the official city inventory as missing one of four required curb ramps, though the specific corner is not specified. There are several unverified resident reports of nearby sidewalk damage, such as trip hazards and crumbling pavement, as well as active permitted traffic control in the area.",
+    "supporting_observation_ids": [
+      "city_gis:prowag2:3575",
+      "city_311:149401",
+      "traffic_control:13483",
+      "traffic_control:24560",
+      "traffic_control:25766",
+      "traffic_control:3540",
+      "city_311:5092020",
+      "city_311:2509361",
+      "city_311:4995253",
+      "city_311:5058287",
+      "city_311:4729416",
+      "city_311:5021328",
+      "city_311:5753252",
+      "city_311:6090941",
+      "city_311:5284531",
+      "city_311:5426122"
+    ],
+    "source_links": [
+      "https://services8.arcgis.com/WunV6yKxvEXfsV4W/ArcGIS/rest/services/CSD_PROWAG_FINAL_V2_WFL1/FeatureServer/2",
+      "https://data.sandiego.gov/datasets/get-it-done-reports/",
+      "https://webmaps.sandiego.gov/arcgis/rest/services/DoIT_Public/DSDPermits/MapServer/5"
+    ],
+    "conflicts": [],
+    "uncertainties": [
+      "Current on-the-ground condition is not verified by this app.",
+      "The exact corner missing a curb ramp is unknown.",
+      "It is unknown if the permitted construction activities currently restrict sidewalk access.",
+      "The physical condition of the intersection is not confirmed beyond the official inventory classification.",
+      "The unverified resident reports of sidewalk damage are distinct from the missing curb ramp record and their current status is unknown."
+    ],
+    "recommendation_type": "informational_only"
+  },
+  "trace": [
+    {
+      "tool": "get_barrier",
+      "input": {},
+      "result_ids": [
+        "city_gis:prowag2:3575"
+      ],
+      "ms": 0
+    },
+    {
+      "tool": "get_nearby_records",
+      "input": {
+        "radius_m": 100
+      },
+      "result_ids": [
+        "city_311:149401",
+        "traffic_control:13483",
+        "traffic_control:24560",
+        "traffic_control:25766",
+        "traffic_control:3540",
+        "city_311:5092020",
+        "city_311:2509361",
+        "city_311:4995253",
+        "city_311:5058287",
+        "city_311:4729416",
+        "city_311:5021328",
+        "city_311:5753252",
+        "city_311:6090941",
+        "city_311:5284531",
+        "city_311:5426122"
+      ],
+      "ms": 948
+    },
+    {
+      "tool": "get_construction_notices",
+      "input": {
+        "radius_m": 400
+      },
+      "result_ids": [],
+      "ms": 146
+    }
+  ],
+  "model": "gemini-3.1-flash-lite"
+}

@@ -1,5 +1,12 @@
 # Progress
 
+## Owner C — Mastra `/api/investigate` (2026-11-14)
+- **Outcome:** Mastra agent (`@mastra/core` 1.83, Gemini flash-lite via model router) with 3 server-bound tools over A's Neon data + notice cache returns a source-backed evidence brief. Ids/links filtered to tool results, forbidden claims rejected in code. Notices refreshed into Neon (Golden Hill `web_notice`, 1 record).
+- **Files:** `src/lib/agents/{brief,investigate}.ts`, `src/app/api/investigate/route.ts`, `scripts/ai/investigate-sample.ts` (`npm run ai:investigate -- <id> <lat> <lon> [out]`), `tests/ai/investigate.test.ts`, `docs/samples/investigate_mastra_trace.json`, contract in `docs/OWNER_B_REQUESTS.md`.
+- **Tests:** `npm test` 215 pass + 1 todo; `test:ui` 44; typecheck + build pass. Live via `next start`: 200 in ~8–21 s, 3–4 tool calls.
+- **For A:** a `getObservation(id)` helper would let B drop lat/lon from the request. Golden Hill is outside `STUDY_BBOX` so its nearby search is empty.
+- **Next:** ElevenLabs `/api/speak`; B wires an "Investigate" button in the evidence panel.
+
 ## Owner B — Sprint 2 routing + warnings (2026-11-14)
 - **Outcome:** `POST /api/route` → Valhalla public server (`pedestrian`, `type: wheelchair` when preferred; override with `VALHALLA_URL`). Returns real geometry/distance/time or `status:"unavailable"`, never a straight line. Near-route warnings use A's `findNearRoute` (30 m, approximate), grouped in the UI as official / resident-reported / AI / other. Rerouting is off (warning-only; `avoid_barrier_ids` ignored). UI: `RoutePlanner` (lat,lon inputs + pick-on-map, preference select), route line plus A/B pins on the map. All CSS colors are now `:root` tokens, the hook for future themes.
 - **Files:** `src/lib/routing/provider.ts`, `src/app/api/route/route.ts`, `src/lib/ui/routeClient.ts`, `src/components/RoutePlanner.tsx`, `src/components/MapView.tsx`, `src/app/page.tsx`, `src/app/globals.css`, `tests/ui/{routing,routeClient}.test.ts`.

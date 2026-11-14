@@ -13,7 +13,14 @@
 - Text: notice extraction for the article above.
 - UI record: TODO (after A's persistence + B's panel).
 
-## Not yet used (do not claim): Mastra, ElevenLabs, Vultr.
+## Mastra — evidence investigation agent
+- Package: `@mastra/core` 1.83.0 `Agent` + `createTool`, Gemini via Mastra model router (`google/gemini-3.1-flash-lite`, fallback `google/gemini-3.5-flash`).
+- Tools (bound server-side to one record; model chooses only a radius ≤200 m): `get_barrier`, `get_nearby_records` (A's Neon store), `get_construction_notices` (web_notice records + Bright Data notice cache).
+- Real run 2026-11-14 on `city_gis:prowag2:3575` (downtown missing-curb-ramp intersection): 3 tool calls, 15 nearby 311/permit records combined, ~8 s. Trace + brief: `docs/samples/investigate_mastra_trace.json`.
+- Guardrails enforced in code (`src/lib/agents/brief.ts`), not just prompt: cited ids/links must come from tool results; forbidden accessibility claims rejected; `recommendation_type` fixed to `informational_only`.
+- Endpoint: `POST /api/investigate` (verified against `next build` + `next start`).
+
+## Not yet used (do not claim): ElevenLabs, Vultr.
 
 ## Image review table (real runs, n=2)
 | Image | License | Model result | Human review |
