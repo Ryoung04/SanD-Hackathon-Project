@@ -91,3 +91,24 @@ test("noticeToObservation passes Owner A's validator; no overlap -> null", async
   assert.equal(obs.evidence.length, 3); // news + 2 overlapping permits, not the future one
   assert.equal(noticeToObservation(notice, matchNoticeToPermits(notice, permits.slice(2))), null);
 });
+
+test("imageToObservations: ai_candidate at camera point; no location -> none", async () => {
+  const { imageToObservations } = await import("@/lib/ai/imageObservations");
+  const { validateObservation } = await import("@/lib/data/normalizers");
+  const analysis = {
+    status: "candidate" as const, image_reference: "upload:abc", captured_at: null, requires_human_review: true as const,
+    candidate_observations: [{ category: "sidewalk_obstruction" as const, explanation: "Fence near path; width unknown",
+      model_confidence: "possible" as const, verification_status: "ai_candidate" as const, routing_impact: "unknown" as const }],
+    curb_ramp_visibility: "not_determinable" as const, no_clear_evidence: false, image_quality_notes: "",
+    model: "test", analyzed_at: "2026-11-14T20:00:00.000Z",
+  };
+  const image = { image_reference: "upload:abc", source: "participant_upload" as const, page_url: null,
+    license: "submitted_with_permission", attribution: null, captured_at: null, camera_location: null };
+  assert.deepEqual(imageToObservations(analysis, image, null), []);
+  const [o] = imageToObservations(analysis, image, { lat: 32.72, lon: -117.16, basis: "user_supplied" });
+  assert.deepEqual(validateObservation(o), { ok: true, errors: [] });
+  assert.equal(o.verification_status, "ai_candidate");
+  assert.equal(o.routing_impact, "unknown");
+  assert.equal(o.geometry_precision, "approximate_point");
+  assert.equal(o.source_observed_at, null); // never upload time
+});

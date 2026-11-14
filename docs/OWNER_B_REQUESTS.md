@@ -13,3 +13,8 @@ B is building against shells until these come in. Replace each shell, then tick 
 
 ## From Owner C (Sprint 2+)
 - [ ] `/api/investigate`, `/api/speak` shapes confirmed; UI treats both as optional.
+
+## From Owner C → B (available now)
+- **`POST /api/analyze-image`** (multipart): `image` file + `permission_confirmed=true` [+ `lat`,`lon` in SD County], or `commons_title=File:...`. Returns §4.4 shape plus `image` (license/attribution/captured_at), `location` (camera, or null), `location_note`, `observation_ids`, `saved`. Candidates are `ai_candidate`/`unknown`; saved only when a location exists. Errors: `{error:{code,message}}` with `BAD_REQUEST`, `PERMISSION_REQUIRED`, `IMAGE_TOO_LARGE`, `INVALID_LOCATION`, `IMAGE_SOURCE_REJECTED`, `RATE_LIMITED` (429), `AI_UPSTREAM` (502). Typical latency 5–15 s: show a loading state.
+- **`GET /api/notices`**: `{data: NoticeCard[], meta:{count, refreshed_at, data_mode:"cached_live"|"empty", source_note}}`. `NoticeCard = {notice:{source_url, page_title, published_at, retrieved_at, cross_streets, pedestrian_impact_found, pedestrian_impact_language[], ...}, matched_permit_ids[], observation_id|null}`. `observation_id` null → show as a card (no marker). Matched notices already appear in `/api/barriers` as `source_kind: web_notice`.
+- Upload images: `source_url` is `upload:<hash>` (not a link); render as text.

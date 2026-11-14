@@ -69,3 +69,9 @@ No Neon DB was available, so the SQL path (xmax=0 counting, keyset query) is unt
   Live: `npm run ai:notice -- <tosd article url> [out.json] [--save]`, `npm run ai:image -- "File:<commons title>" [out.json]` (read keys from `.env`/`.env.local`).
 - Note for A: Golden Hill (25th & C) is outside `STUDY_BBOX` [-117.175,32.712,-117.15,32.73]; the script queries permits for a wider bbox itself.
 - Next: `POST /api/analyze-image`, notices endpoint for B, Mastra agent.
+
+## Owner C — API endpoints (2026-11-14, ~12:00 PT)
+- New: `POST /api/analyze-image`, `GET /api/notices`, `POST /api/notices/refresh` (header `x-admin-token: $ADMIN_TOKEN`; runs bounded Bright Data + Gemini pipeline, ~60 s, ≤8 articles). Lib: `src/lib/web/{permits,noticePipeline,noticeStore}.ts`, `src/lib/ai/imageObservations.ts`. Cache: `data/notices.json` (gitignored).
+- Live dev-server test (isolated stores): error paths OK; Commons SD image → 200, camera GPS + 2020-04-23, no candidates, nothing saved; upload without location → 2 `sidewalk_obstruction` candidates (pole, fence; model output varies run-to-run), not mapped; refresh → Golden Hill card, 3 permits, 1 observation upserted via A, returned by `/api/barriers`.
+- Tests: `npm test` 22 pass; typecheck clean. Contract for B in `docs/OWNER_B_REQUESTS.md`.
+- To populate demo data: set `ADMIN_TOKEN` in `.env`, run app, `curl -X POST localhost:3000/api/notices/refresh -H "x-admin-token: ..."` (or `npm run ai:notice -- --refresh --save`).
