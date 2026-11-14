@@ -20,7 +20,12 @@
 - Guardrails enforced in code (`src/lib/agents/brief.ts`), not just prompt: cited ids/links must come from tool results; forbidden accessibility claims rejected; `recommendation_type` fixed to `informational_only`.
 - Endpoint: `POST /api/investigate` (verified against `next build` + `next start`).
 
-## Not yet used (do not claim): ElevenLabs, Vultr.
+## ElevenLabs — text-to-speech
+- API: `POST /v1/text-to-speech/{voice}` model `eleven_flash_v2_5`, premade voice "River". Free tier (10k chars/month).
+- Real call 2026-11-14: spoke the Mastra brief summary for `city_gis:prowag2:3575` (326 chars) → 145 KB MP3 (44.1 kHz, 64 kbps) in 0.9 s.
+- Endpoint: `POST /api/speak` reads only on-screen text (≤600 chars), rejects forbidden accessibility claims, caches identical text, 5/min/IP, 3000-char/day cap. Text stays visible; audio is never the only path.
+
+## Not yet used (do not claim): Vultr.
 
 ## Image review table (real runs, n=2)
 | Image | License | Model result | Human review |

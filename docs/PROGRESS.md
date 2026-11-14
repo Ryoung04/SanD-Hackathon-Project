@@ -1,5 +1,11 @@
 # Progress
 
+## Owner C — ElevenLabs `/api/speak` (2026-11-14)
+- **Outcome:** server-side TTS for on-screen text; live call verified (326 chars → MP3, 0.9 s). Budget guards for free tier.
+- **Files:** `src/lib/voice/elevenlabs.ts`, `src/app/api/speak/route.ts`, `tests/ai/speak.test.ts`; contract in `docs/OWNER_B_REQUESTS.md`.
+- **Tests:** `npm test` 232 pass + 1 todo; build passes.
+- **Next:** B adds "Investigate" + "Read aloud" buttons in the evidence panel. Vultr only if time permits ($100 credit cap — careful).
+
 ## Owner C — Mastra `/api/investigate` (2026-11-14)
 - **Outcome:** Mastra agent (`@mastra/core` 1.83, Gemini flash-lite via model router) with 3 server-bound tools over A's Neon data + notice cache returns a source-backed evidence brief. Ids/links filtered to tool results, forbidden claims rejected in code. Notices refreshed into Neon (Golden Hill `web_notice`, 1 record).
 - **Files:** `src/lib/agents/{brief,investigate}.ts`, `src/app/api/investigate/route.ts`, `scripts/ai/investigate-sample.ts` (`npm run ai:investigate -- <id> <lat> <lon> [out]`), `tests/ai/investigate.test.ts`, `docs/samples/investigate_mastra_trace.json`, contract in `docs/OWNER_B_REQUESTS.md`.
