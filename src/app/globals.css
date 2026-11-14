@@ -18,6 +18,8 @@
   --error: #b91c1c;
   --pin-start: #15803d;
   --pin-end: #b91c1c;
+  --ai: #ede9fe;
+  --ai-fg: #4c1d95;
   --radius: 8px;
   --radius-sm: 6px;
   /* Theme hook: future themes override these tokens (e.g. [data-theme="dark"] { ... }); components use tokens only. */
@@ -112,6 +114,21 @@ button[aria-pressed="true"] { border-color: var(--fg); border-width: 2px; }
 }
 .pin--start { background: var(--pin-start); }
 .pin--end { background: var(--pin-end); }
+
+/* Collapsible secondary panels (news, photo report) */
+.collapsible > summary { cursor: pointer; list-style: none; display: flex; align-items: center; min-height: 44px; }
+.collapsible > summary::-webkit-details-marker { display: none; }
+.collapsible > summary::before { content: "▸"; margin-right: 0.5rem; }
+.collapsible[open] > summary::before { content: "▾"; }
+.collapsible > summary h2 { margin: 0; }
+.card-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.card { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem; }
+.card h3 { margin: 0 0 0.25rem; }
+blockquote { margin: 0.25rem 0; padding-left: 0.5rem; border-left: 3px solid var(--border); }
+.check { display: flex; gap: 0.5rem; align-items: start; }
+.check input { min-height: auto; margin-top: 0.25rem; }
+.badge--ai { background: var(--ai); color: var(--ai-fg); }
+.evidence-actions { margin-top: 0.75rem; }
 
 @media (max-width: 800px) {
   .layout { grid-template-columns: 1fr; }

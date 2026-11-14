@@ -1,5 +1,10 @@
 # Progress
 
+## Owner B — Owner C UI shells (2026-11-14)
+- **Outcome:** Shells for C's features, all optional; failures never block the map or routing. Collapsible "Construction news" panel (GET /api/notices, loads on open, empty state, a "Show on map" button only when observation_id is set). "Report with a photo" form (POST /api/analyze-image: permission checkbox, 5 MB check, optional camera lat/lon; results labelled AI candidate, unverified; refetches barriers when saved). "Explain evidence" and "Read aloud" buttons on a record call /api/investigate and /api/speak and hide themselves on 404 (both 404 today). `upload:` sources render as "Participant upload (no public link)".
+- **Files:** `src/lib/ui/evidenceClient.ts`, `src/components/{NoticesPanel,PhotoReport,EvidenceActions}.tsx`, `BarrierDetail.tsx`, `page.tsx`, `globals.css`, `tests/ui/evidenceClient.test.ts`.
+- **Tests:** `npm run test:ui` 69 pass; `npm test` 196 pass; typecheck and build clean.
+
 ## Owner B — Sprint 2 routing + warnings (2026-11-14)
 - **Outcome:** `POST /api/route` → Valhalla public server (`pedestrian`, `type: wheelchair` when preferred; override with `VALHALLA_URL`). Returns real geometry/distance/time or `status:"unavailable"`, never a straight line. Near-route warnings use A's `findNearRoute` (30 m, approximate), grouped in the UI as official / resident-reported / AI / other. Rerouting is off (warning-only; `avoid_barrier_ids` ignored). UI: `RoutePlanner` (lat,lon inputs + pick-on-map, preference select), route line plus A/B pins on the map. All CSS colors are now `:root` tokens, the hook for future themes.
 - **Files:** `src/lib/routing/provider.ts`, `src/app/api/route/route.ts`, `src/lib/ui/routeClient.ts`, `src/components/RoutePlanner.tsx`, `src/components/MapView.tsx`, `src/app/page.tsx`, `src/app/globals.css`, `tests/ui/{routing,routeClient}.test.ts`.

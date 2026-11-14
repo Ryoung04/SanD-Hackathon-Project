@@ -3,11 +3,13 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BarrierObservation, BBox, DataMode, SourceKind } from "@/lib/ui/barrierTypes";
-import { debounce, filterBySource, loadBarriers } from "@/lib/ui/barrierClient";
+import { clearBarrierCache, debounce, filterBySource, loadBarriers } from "@/lib/ui/barrierClient";
 import BarrierDetail from "@/components/BarrierDetail";
 import ObservationList from "@/components/ObservationList";
 import SourceLegend, { ALL_SOURCES } from "@/components/SourceLegend";
 import RoutePlanner, { type PickTarget } from "@/components/RoutePlanner";
+import NoticesPanel from "@/components/NoticesPanel";
+import PhotoReport from "@/components/PhotoReport";
 import { STUDY_BBOX } from "@/lib/data/studyArea";
 import { inBBox, requestRoute, type LatLon, type RouteProfile, type RouteResult } from "@/lib/ui/routeClient";
 
@@ -45,9 +47,13 @@ export default function Home() {
     setRoute(r);
     setRouting(false);
   };
+  // After a saved photo report, drop cached tiles and refetch the current view.
+  const refreshBarriers = () => { clearBarrierCache(); if (lastBBox.current) fetchBBox(lastBBox.current); };
   const clearRoute = () => { routeSeq.current++; setStart(null); setEnd(null); setRoute(null); setRouting(false); setPicking(null); };
 
+  const lastBBox = useRef<BBox | null>(null);
   const fetchBBox = useCallback(async (bbox: BBox) => {
+    lastBBox.current = bbox;
     const seq = ++reqSeq.current;
     setLoading(true);
     const { response, liveError } = await loadBarriers(bbox);
@@ -107,6 +113,8 @@ export default function Home() {
             observations={all} onSelect={setSelectedId}
           />
           <BarrierDetail obs={selected} onClose={() => setSelectedId(null)} />
+          <NoticesPanel onSelect={setSelectedId} />
+          <PhotoReport suggestedLocation={start} onSaved={refreshBarriers} />
           <SourceLegend enabled={enabled} onToggle={toggle} counts={counts} />
           <ObservationList items={visible} selectedId={selectedId} onSelect={setSelectedId} />
         </aside>

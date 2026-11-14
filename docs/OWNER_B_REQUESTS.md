@@ -12,7 +12,10 @@ B is building against shells until these come in. Replace each shell, then tick 
 - [x] (Optional, Sprint 2) A near-route helper. Used: `findNearRoute` from `src/lib/data/observations.ts`. Without one, B does local proximity with a documented threshold.
 
 ## From Owner C (Sprint 2+)
-- [ ] `/api/investigate`, `/api/speak` shapes confirmed; UI treats both as optional.
+- [ ] `/api/investigate`, `/api/speak` shapes confirmed; UI treats both as optional. **B's assumed shapes (shell in `src/lib/ui/evidenceClient.ts`; tell B if different):**
+  - `POST /api/investigate {observation_id}` → `{explanation: string, sources: string[]}`; errors `{error:{code,message}}`.
+  - `POST /api/speak {text}` (≤1000 chars, on-screen text only) → audio body (e.g. `audio/mpeg`).
+  - A 404 hides each button, so deploying either endpoint turns its button on automatically.
 
 ## From Owner C → B (available now)
 - **`POST /api/analyze-image`** (multipart): `image` file + `permission_confirmed=true` [+ `lat`,`lon` in SD County], or `commons_title=File:...`. Returns §4.4 shape plus `image` (license/attribution/captured_at), `location` (camera, or null), `location_note`, `observation_ids`, `saved`. Candidates are `ai_candidate`/`unknown`; saved only when a location exists. Errors: `{error:{code,message}}` with `BAD_REQUEST`, `PERMISSION_REQUIRED`, `IMAGE_TOO_LARGE`, `INVALID_LOCATION`, `IMAGE_SOURCE_REJECTED`, `RATE_LIMITED` (429), `AI_UPSTREAM` (502). Typical latency 5–15 s: show a loading state.
