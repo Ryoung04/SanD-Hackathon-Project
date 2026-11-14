@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { BarrierObservation } from "@/lib/data/types";
 
 // Fake Mastra Agent: calls the real bound tools, then returns whatever draft the test sets.
-const agentState: { draft: unknown; calls: { radius_m?: number } | null; throwMsg: string | null; tools: string[] } = {
-  draft: null, calls: null, throwMsg: null, tools: [],
+const agentState: { draft: unknown; queue: unknown[]; gens: number; calls: { radius_m?: number } | null; throwMsg: string | null; tools: string[] } = {
+  draft: null, queue: [], gens: 0, calls: null, throwMsg: null, tools: [],
 };
 vi.mock("@mastra/core/agent", () => ({
   Agent: class {
@@ -17,7 +17,9 @@ vi.mock("@mastra/core/agent", () => ({
       await this.tools.get_barrier.execute({});
       await this.tools.get_nearby_records.execute(agentState.calls ?? { radius_m: 100 });
       await this.tools.get_construction_notices.execute({});
-      return { object: agentState.draft, response: { modelId: "test-model" } };
+      agentState.gens++;
+      const object = agentState.queue.length ? agentState.queue.shift() : agentState.draft;
+      return { object, response: { modelId: "test-model" } };
     }
   },
 }));
@@ -53,6 +55,8 @@ beforeEach(() => {
   };
   agentState.calls = null;
   agentState.throwMsg = null;
+  agentState.queue = [];
+  agentState.gens = 0;
   mList.mockReset();
   mList.mockResolvedValue({ data: [BARRIER, NEAR, FAR], meta: {} } as any);
   process.env.GEMINI_API_KEY = "test";
@@ -117,9 +121,16 @@ describe("investigateBarrier (fake agent, real tools)", () => {
     agentState.throwMsg = "503 overloaded";
     await expect(investigateBarrier({ barrier_id: "city_gis:1", lat: 32.7188, lon: -117.1674 })).rejects.toMatchObject({ code: "AI_UPSTREAM" });
   });
+  it("retries once when the first structured output is malformed", async () => {
+    agentState.queue = [undefined];
+    const r = await investigateBarrier({ barrier_id: "city_gis:1", lat: 32.7188, lon: -117.1674 });
+    expect(agentState.gens).toBe(2);
+    expect(r.brief.barrier_id).toBe("city_gis:1");
+  });
   it("INVALID_OUTPUT when the draft is malformed", async () => {
     agentState.draft = { summary: 5 };
     await expect(investigateBarrier({ barrier_id: "city_gis:1", lat: 32.7188, lon: -117.1674 })).rejects.toMatchObject({ code: "INVALID_OUTPUT" });
+    expect(agentState.gens).toBe(2); // tried twice, then gave up
   });
 });
 

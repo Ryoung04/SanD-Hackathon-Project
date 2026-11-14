@@ -1,5 +1,10 @@
 # Progress
 
+## Owner C — Vultr deploy (2026-11-14)
+- **Live:** https://140-82-17-18.sslip.io — full app on Vultr `vc2-1c-1gb` (lax), Caddy TLS, Neon data. Redeploy: `scripts/deploy/vultr-deploy.sh 140.82.17.18` (needs `~/.ssh/accesspath_vultr`, Aidan's machine). Server env = Gemini + ElevenLabs + DATABASE_URL only.
+- `/api/investigate` now retries once on malformed structured output (seen 1/6 live). `npm test` 233 pass + 1 todo.
+- **Cost:** $5/mo on $100 credit — delete after judging.
+
 ## Owner C — ElevenLabs `/api/speak` (2026-11-14)
 - **Outcome:** server-side TTS for on-screen text; live call verified (326 chars → MP3, 0.9 s). Budget guards for free tier.
 - **Files:** `src/lib/voice/elevenlabs.ts`, `src/app/api/speak/route.ts`, `tests/ai/speak.test.ts`; contract in `docs/OWNER_B_REQUESTS.md`.

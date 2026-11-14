@@ -167,29 +167,32 @@ export async function investigateBarrier(input: { barrier_id: string; lat: numbe
     tools: { get_barrier: getBarrier, get_nearby_records: getNearby, get_construction_notices: getNotices },
   });
 
-  let res: any;
-  try {
-    res = await agent.generate(
-      `Investigate map record ${JSON.stringify(barrier.id)}. Use the tools, then return the brief.`,
-      {
-        maxSteps: MAX_STEPS,
-        abortSignal: AbortSignal.timeout(TIMEOUT_MS),
-        structuredOutput: { schema: BriefDraft },
-      } as any,
-    );
-  } catch (e) {
-    const msg = (e as Error)?.message ?? String(e);
-    if (/abort|timeout/i.test(msg)) throw new InvestigateError("TIMEOUT", `Agent exceeded ${TIMEOUT_MS / 1000}s`);
-    throw new InvestigateError("AI_UPSTREAM", msg.slice(0, 200));
+  // One shared deadline. Structured output is occasionally missing/malformed (seen ~1 in 6
+  // live runs), so retry once if enough time remains; never retry on timeout/upstream errors.
+  const deadline = AbortSignal.timeout(TIMEOUT_MS);
+  const started = Date.now();
+  let lastInvalid = "Agent did not return a valid brief";
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    let res: any;
+    try {
+      res = await agent.generate(
+        `Investigate map record ${JSON.stringify(barrier.id)}. Use the tools, then return the brief.`,
+        { maxSteps: MAX_STEPS, abortSignal: deadline, structuredOutput: { schema: BriefDraft } } as any,
+      );
+    } catch (e) {
+      const msg = (e as Error)?.message ?? String(e);
+      if (deadline.aborted || /abort|timeout/i.test(msg)) throw new InvestigateError("TIMEOUT", `Agent exceeded ${TIMEOUT_MS / 1000}s`);
+      throw new InvestigateError("AI_UPSTREAM", msg.slice(0, 200));
+    }
+    const parsed = BriefDraft.safeParse(res?.object);
+    if (parsed.success) {
+      try {
+        return { brief: finalizeBrief(barrier.id, parsed.data, [...seen.values()]), trace, model: res?.response?.modelId ?? null };
+      } catch (e) {
+        lastInvalid = (e as Error).message;
+      }
+    }
+    if (Date.now() - started > TIMEOUT_MS - 15_000) break;
   }
-
-  const parsed = BriefDraft.safeParse(res?.object);
-  if (!parsed.success) throw new InvestigateError("INVALID_OUTPUT", "Agent did not return a valid brief");
-  let brief: EvidenceBrief;
-  try {
-    brief = finalizeBrief(barrier.id, parsed.data, [...seen.values()]);
-  } catch (e) {
-    throw new InvestigateError("INVALID_OUTPUT", (e as Error).message);
-  }
-  return { brief, trace, model: res?.response?.modelId ?? null };
+  throw new InvestigateError("INVALID_OUTPUT", lastInvalid);
 }

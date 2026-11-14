@@ -25,7 +25,13 @@
 - Real call 2026-11-14: spoke the Mastra brief summary for `city_gis:prowag2:3575` (326 chars) → 145 KB MP3 (44.1 kHz, 64 kbps) in 0.9 s.
 - Endpoint: `POST /api/speak` reads only on-screen text (≤600 chars), rejects forbidden accessibility claims, caches identical text, 5/min/IP, 3000-char/day cap. Text stays visible; audio is never the only path.
 
-## Not yet used (do not claim): Vultr.
+## Vultr — hosts the full web app
+- Instance `accesspath-sd-demo`: `vc2-1c-1gb` (1 vCPU / 1 GB, $5/mo), region `lax`, Ubuntu 24.04, created 2026-11-14 via Vultr API. Backups off, ufw 22/80/443 only.
+- Runs: the whole Next.js app (map UI + `/api/barriers`, `/api/route`, `/api/notices`, `/api/investigate`, `/api/speak`) as systemd service under a non-root user, behind Caddy with Let's Encrypt TLS.
+- URL: https://140-82-17-18.sslip.io (live 2026-11-14 ~12:45 PT). Data from Neon; AI calls to Gemini/ElevenLabs from the Vultr box.
+- Verified from outside: home 200; `/api/barriers` 200 live_import; `/api/notices` 1 card; `/api/investigate` 200 ×4 (11–26 s); `/api/speak` 200 audio/mpeg; `/api/notices/refresh` 401 (no admin token or Bright Data key on server, by design).
+- Scripts: `scripts/deploy/vultr-provision.sh`, `scripts/deploy/vultr-deploy.sh <ip>`.
+- **Teardown after judging** (credit-limited): delete instance + ssh key via Vultr API/console.
 
 ## Image review table (real runs, n=2)
 | Image | License | Model result | Human review |
