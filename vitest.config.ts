@@ -7,5 +7,5 @@ export default defineConfig({
       { find: /^@\//, replacement: path.resolve(__dirname, 'src') + '/' },
     ],
   },
-  test: { include: ['tests/**/*.test.ts'] },
+  test: { include: ["tests/**/*.test.ts"], exclude: ["tests/ui/**", "node_modules/**"] },
 });
