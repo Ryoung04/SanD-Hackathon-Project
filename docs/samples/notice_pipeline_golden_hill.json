@@ -5,7 +5,7 @@
     "source_type": "news_report",
     "page_title": "Construction crews arrive, parking woes follow. Golden Hill Cafe is latest local business to feel the pain.",
     "published_at": "2026-11-09T20:10:15Z",
-    "retrieved_at": "2026-11-14T19:47:00.084Z",
+    "retrieved_at": "2026-11-14T20:05:18.773Z",
     "retrieved_via": "bright_data_web_unlocker",
     "construction_mentioned": true,
     "location_text": "1101 25th St.",
@@ -37,7 +37,8 @@
         "c"
       ],
       "match_basis": "street_pair_in_permit_block",
-      "date_overlap": "overlaps"
+      "date_overlap": "overlaps",
+      "date_basis": "article_publication_date"
     },
     {
       "permit": {
@@ -54,7 +55,8 @@
         "c"
       ],
       "match_basis": "street_pair_in_permit_block",
-      "date_overlap": "overlaps"
+      "date_overlap": "overlaps",
+      "date_basis": "article_publication_date"
     },
     {
       "permit": {
@@ -71,7 +73,8 @@
         "c"
       ],
       "match_basis": "street_pair_in_permit_block",
-      "date_overlap": "overlaps"
+      "date_overlap": "overlaps",
+      "date_basis": "article_publication_date"
     },
     {
       "permit": {
@@ -88,7 +91,8 @@
         "c"
       ],
       "match_basis": "street_pair_in_permit_block",
-      "date_overlap": "no_overlap"
+      "date_overlap": "no_overlap",
+      "date_basis": "article_publication_date"
     },
     {
       "permit": {
@@ -105,7 +109,8 @@
         "c"
       ],
       "match_basis": "street_pair_in_permit_block",
-      "date_overlap": "no_overlap"
+      "date_overlap": "no_overlap",
+      "date_basis": "article_publication_date"
     },
     {
       "permit": {
@@ -122,7 +127,8 @@
         "c"
       ],
       "match_basis": "street_pair_in_permit_block",
-      "date_overlap": "no_overlap"
+      "date_overlap": "no_overlap",
+      "date_basis": "article_publication_date"
     },
     {
       "permit": {
@@ -139,7 +145,8 @@
         "c"
       ],
       "match_basis": "street_pair_in_permit_block",
-      "date_overlap": "no_overlap"
+      "date_overlap": "no_overlap",
+      "date_basis": "article_publication_date"
     },
     {
       "permit": {
@@ -156,7 +163,8 @@
         "c"
       ],
       "match_basis": "street_pair_in_permit_block",
-      "date_overlap": "no_overlap"
+      "date_overlap": "no_overlap",
+      "date_basis": "article_publication_date"
     },
     {
       "permit": {
@@ -173,7 +181,8 @@
         "c"
       ],
       "match_basis": "street_pair_in_permit_block",
-      "date_overlap": "no_overlap"
+      "date_overlap": "no_overlap",
+      "date_basis": "article_publication_date"
     },
     {
       "permit": {
@@ -190,11 +199,12 @@
         "c"
       ],
       "match_basis": "street_pair_in_permit_block",
-      "date_overlap": "no_overlap"
+      "date_overlap": "no_overlap",
+      "date_basis": "article_publication_date"
     }
   ],
   "observation": {
-    "id": "web_notice:tosd:san-diego-construction-parking-woes-golden-hill-cafe",
+    "id": "web_notice:timesofsandiego.com/business/2026/11/09/san-diego-construction-parking-woes-golden-hill-cafe",
     "category": "construction_warning",
     "label": "Construction reported nearby; pedestrian impact not stated",
     "geometry": {
@@ -210,18 +220,18 @@
     "source_url": "https://timesofsandiego.com/business/2026/11/09/san-diego-construction-parking-woes-golden-hill-cafe/",
     "source_observed_at": null,
     "source_updated_at": "2026-11-09T20:10:15Z",
-    "ingested_at": "2026-11-14T19:47:09.111Z",
+    "ingested_at": "2026-11-14T20:05:31.935Z",
     "verification_status": "unverified_report",
     "routing_impact": "unknown",
     "severity": "unknown",
-    "description": "News report describes construction near 25th Street & C Street; it does not mention sidewalks. City permits PMT-3450613, PMT-3419028, PMT-3440352 cover this block.",
+    "description": "News report describes construction near 25th Street & C Street; it does not mention sidewalks. City permits PMT-3450613, PMT-3419028, PMT-3440352 cover this block when the article was published (article gives no work dates).",
     "evidence": [
       {
         "kind": "news_report",
         "source_url": "https://timesofsandiego.com/business/2026/11/09/san-diego-construction-parking-woes-golden-hill-cafe/",
         "title": "Construction crews arrive, parking woes follow. Golden Hill Cafe is latest local business to feel the pain.",
         "published_at": "2026-11-09T20:10:15Z",
-        "retrieved_at": "2026-11-14T19:47:00.084Z",
+        "retrieved_at": "2026-11-14T20:05:18.773Z",
         "retrieved_via": "bright_data_web_unlocker",
         "quotes": []
       },
@@ -236,7 +246,8 @@
           "25th",
           "c"
         ],
-        "date_overlap": "overlaps"
+        "date_overlap": "overlaps",
+        "date_basis": "article_publication_date"
       },
       {
         "kind": "city_traffic_control_permit",
@@ -249,7 +260,8 @@
           "25th",
           "c"
         ],
-        "date_overlap": "overlaps"
+        "date_overlap": "overlaps",
+        "date_basis": "article_publication_date"
       },
       {
         "kind": "city_traffic_control_permit",
@@ -262,7 +274,8 @@
           "25th",
           "c"
         ],
-        "date_overlap": "overlaps"
+        "date_overlap": "overlaps",
+        "date_basis": "article_publication_date"
       }
     ],
     "metadata": {

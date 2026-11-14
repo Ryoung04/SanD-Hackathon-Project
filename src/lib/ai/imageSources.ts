@@ -4,6 +4,7 @@
 
 const COMMONS_API = "https://commons.wikimedia.org/w/api.php";
 const UA = "AccessPathSD-hackathon/0.1";
+const MAX_COMMONS_BYTES = 5 * 1024 * 1024;
 const OK_LICENSE = /^(CC0|Public domain|CC BY(-SA)? \d\.\d)$/i;
 
 export interface ImageReference {
@@ -28,7 +29,7 @@ export function parseCommonsDate(raw?: string): string | null {
 }
 
 export async function fetchCommonsImage(title: string): Promise<{ bytes: Uint8Array; mimeType: string; ref: ImageReference }> {
-  if (!/^File:[^/\\]+\.(jpe?g|png|webp)$/i.test(title)) throw new Error("invalid Commons file title");
+  if (title.length > 200 || !/^File:[^/\\|#?<>[\]{}]+\.(jpe?g|png|webp)$/i.test(title)) throw new Error("invalid Commons file title");
   const u = new URL(COMMONS_API);
   for (const [k, v] of Object.entries({
     action: "query", format: "json", titles: title, prop: "imageinfo",
@@ -43,12 +44,16 @@ export async function fetchCommonsImage(title: string): Promise<{ bytes: Uint8Ar
   if (!OK_LICENSE.test(license)) throw new Error(`license not allowlisted: ${license || "unknown"}`);
 
   const imgUrl = new URL(ii.thumburl ?? ii.url);
-  if (!["upload.wikimedia.org", "thumb.wikimedia.org"].includes(imgUrl.hostname)) throw new Error("unexpected image host");
-  const res = await fetch(imgUrl, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(20_000) });
+  if (imgUrl.protocol !== "https:" || !["upload.wikimedia.org", "thumb.wikimedia.org"].includes(imgUrl.hostname))
+    throw new Error("unexpected image host");
+  const res = await fetch(imgUrl, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(20_000), redirect: "error" });
   if (!res.ok) throw new Error(`image fetch HTTP ${res.status}`);
+  if (Number(res.headers.get("content-length") ?? 0) > MAX_COMMONS_BYTES) throw new Error("image too large");
+  const buf = new Uint8Array(await res.arrayBuffer());
+  if (buf.byteLength > MAX_COMMONS_BYTES) throw new Error("image too large");
   const lat = Number(em.GPSLatitude?.value), lon = Number(em.GPSLongitude?.value);
   return {
-    bytes: new Uint8Array(await res.arrayBuffer()),
+    bytes: buf,
     mimeType: res.headers.get("content-type")?.split(";")[0] ?? ii.mime,
     ref: {
       image_reference: `commons:${page.title}`,

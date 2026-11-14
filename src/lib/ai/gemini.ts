@@ -3,6 +3,7 @@ import "server-only";
 // - Structured JSON via responseSchema, then Zod validation (validate.ts).
 // - Model fallback chain: some models 404 for our key or 503 under load.
 import {
+  noForbiddenClaim,
   VISION_RESPONSE_SCHEMA,
   VisionModelOutput,
   NOTICE_RESPONSE_SCHEMA,
@@ -111,19 +112,32 @@ export interface AnalyzeImageResponse {
   curb_ramp_visibility: VisionModelOutput["curb_ramp_visibility"];
   no_clear_evidence: boolean;
   image_quality_notes: string;
+  dropped_for_unsupported_claims: number;
   requires_human_review: true;
   model: string;
   analyzed_at: string;
 }
 
+/** Detect JPEG/PNG/WebP from magic bytes; never trust the caller's MIME label. */
+export function sniffImageMime(b: Uint8Array): string | null {
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "image/jpeg";
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return "image/png";
+  if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50)
+    return "image/webp";
+  return null;
+}
+
 export async function analyzeImage(input: AnalyzeImageInput): Promise<AnalyzeImageResponse> {
-  if (!ALLOWED_MIME.has(input.mimeType)) throw new GeminiError("BAD_INPUT", "unsupported image type");
   if (input.bytes.byteLength === 0 || input.bytes.byteLength > MAX_IMAGE_BYTES)
     throw new GeminiError("BAD_INPUT", "image size out of range");
+  const sniffed = sniffImageMime(input.bytes);
+  if (!sniffed || !ALLOWED_MIME.has(sniffed)) throw new GeminiError("BAD_INPUT", "unsupported image type");
+  if (input.capturedAt !== null && !/^\d{4}-\d{2}-\d{2}$/.test(input.capturedAt))
+    throw new GeminiError("BAD_INPUT", "captured_at must be YYYY-MM-DD or null");
 
   const { json, model } = await generateJson(
     [
-      { inline_data: { mime_type: input.mimeType, data: Buffer.from(input.bytes).toString("base64") } },
+      { inline_data: { mime_type: sniffed, data: Buffer.from(input.bytes).toString("base64") } },
       { text: VISION_PROMPT },
     ],
     VISION_RESPONSE_SCHEMA,
@@ -131,18 +145,22 @@ export async function analyzeImage(input: AnalyzeImageInput): Promise<AnalyzeIma
   const parsed = VisionModelOutput.safeParse(json);
   if (!parsed.success) throw new GeminiError("INVALID_OUTPUT", parsed.error.issues.map((i) => i.message).join("; "));
   const out = parsed.data;
+  const kept = out.candidate_observations.filter((c) => noForbiddenClaim(c.explanation));
   return {
     status: "candidate",
     image_reference: input.imageReference,
     captured_at: input.capturedAt,
-    candidate_observations: out.candidate_observations.map((c) => ({
+    candidate_observations: kept.map((c) => ({
       ...c,
       verification_status: "ai_candidate",
       routing_impact: "unknown",
     })),
     curb_ramp_visibility: out.curb_ramp_visibility,
     no_clear_evidence: out.no_clear_evidence,
-    image_quality_notes: out.image_quality_notes,
+    image_quality_notes: noForbiddenClaim(out.image_quality_notes)
+      ? out.image_quality_notes
+      : "[removed: notes contained an unsupported accessibility claim]",
+    dropped_for_unsupported_claims: out.candidate_observations.length - kept.length,
     requires_human_review: true,
     model,
     analyzed_at: new Date().toISOString(),

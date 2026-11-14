@@ -7,7 +7,9 @@ import "server-only";
 const ENDPOINT = "https://api.brightdata.com/request";
 
 // SSRF guard: only these hosts may be fetched. Extend deliberately.
-const ALLOWED_HOSTS = new Set(["timesofsandiego.com", "www.google.com"]);
+// Never allowlist hosts with open redirectors (e.g. google.com/url?q=), which
+// would bypass both this list and Bright Data's Government-site policy.
+const ALLOWED_HOSTS = new Set(["timesofsandiego.com"]);
 
 export class BrightDataError extends Error {
   constructor(
@@ -34,9 +36,11 @@ export function assertAllowedUrl(raw: string): URL {
     throw new BrightDataError("HOST_NOT_ALLOWED", "invalid URL");
   }
   if (u.protocol !== "https:") throw new BrightDataError("HOST_NOT_ALLOWED", "https only");
-  if (/\.gov$|\.ca\.gov$|\.mil$/i.test(u.hostname))
-    throw new BrightDataError("POLICY_BLOCKED", `${u.hostname}: government sites are not fetched via Bright Data`);
-  if (!ALLOWED_HOSTS.has(u.hostname)) throw new BrightDataError("HOST_NOT_ALLOWED", `${u.hostname} not allowlisted`);
+  if (u.username || u.password || u.port) throw new BrightDataError("HOST_NOT_ALLOWED", "credentials/ports not allowed");
+  const host = u.hostname.toLowerCase().replace(/\.+$/, "");
+  if (/\.(gov|mil)$/.test(host))
+    throw new BrightDataError("POLICY_BLOCKED", `${host}: government sites are not fetched via Bright Data`);
+  if (host !== u.hostname || !ALLOWED_HOSTS.has(host)) throw new BrightDataError("HOST_NOT_ALLOWED", `${host} not allowlisted`);
   return u;
 }
 
@@ -47,12 +51,12 @@ export async function brightDataFetch(
   const key = process.env.BRIGHTDATA_API_KEY;
   const zone = process.env.BRIGHTDATA_ZONE ?? "cli_unlocker";
   if (!key) throw new BrightDataError("CONFIG", "BRIGHTDATA_API_KEY not set");
-  assertAllowedUrl(url);
+  const target = assertAllowedUrl(url).href; // send the parsed URL, never the raw string
 
   const res = await fetch(ENDPOINT, {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ zone, url, format: "raw", ...(opts.dataFormat ? { data_format: opts.dataFormat } : {}) }),
+    body: JSON.stringify({ zone, url: target, format: "raw", ...(opts.dataFormat ? { data_format: opts.dataFormat } : {}) }),
     signal: AbortSignal.timeout(opts.timeoutMs ?? 60_000),
   });
   const retrieved_at = new Date().toISOString();
@@ -63,5 +67,5 @@ export async function brightDataFetch(
     throw new BrightDataError(blocked ? "POLICY_BLOCKED" : "UPSTREAM", brdError.slice(0, 300));
   }
   if (!res.ok) throw new BrightDataError("UPSTREAM", `HTTP ${res.status}`);
-  return { requested_url: url, body: await res.text(), retrieved_at, provider: "bright_data_web_unlocker", zone };
+  return { requested_url: target, body: await res.text(), retrieved_at, provider: "bright_data_web_unlocker", zone };
 }

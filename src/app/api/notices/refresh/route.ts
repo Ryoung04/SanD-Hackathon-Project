@@ -23,7 +23,8 @@ let running = false;
 export async function POST(req: Request) {
   if (!authorized(req)) return err(401, "UNAUTHORIZED", "Admin token required");
   if (running) return err(409, "BUSY", "A refresh is already running");
-  const body = await req.json().catch(() => ({}));
+  const raw: unknown = await req.json().catch(() => null);
+  const body = (raw && typeof raw === "object" ? raw : {}) as { days?: unknown; save?: unknown };
   const days = Math.min(Math.max(Number(body.days) || 60, 1), 120);
   running = true;
   try {

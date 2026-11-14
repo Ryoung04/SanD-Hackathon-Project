@@ -52,8 +52,10 @@ export interface Article extends ArticleRef {
 }
 
 export async function fetchArticle(sourceUrl: string): Promise<Article> {
-  const slug = new URL(sourceUrl).pathname.split("/").filter(Boolean).pop();
-  if (!slug) throw new Error("cannot derive slug");
+  const src = new URL(sourceUrl);
+  if (src.protocol !== "https:" || src.hostname !== "timesofsandiego.com") throw new Error("not a Times of San Diego URL");
+  const slug = src.pathname.split("/").filter(Boolean).pop();
+  if (!slug || !/^[a-z0-9-]{1,200}$/.test(slug)) throw new Error("cannot derive slug");
   const u = new URL(WP);
   u.searchParams.set("slug", slug);
   u.searchParams.set("_fields", "id,date_gmt,modified_gmt,link,title,content");
@@ -127,11 +129,13 @@ export function noticeToObservation(notice: ConstructionNotice, matches: PermitM
   const p = overlapping[0].permit;
   const ids = overlapping.map((m) => m.permit.approval_id);
   const ped = notice.pedestrian_impact_found;
-  const slug = new URL(notice.source_url).pathname.split("/").filter(Boolean).pop();
+  const src = new URL(notice.source_url);
+  const key = `${src.hostname}${src.pathname}`.replace(/\/+$/, "");
   const where = notice.cross_streets.join(" & ");
-  const permitsText = `City permit${ids.length > 1 ? "s" : ""} ${ids.join(", ")} cover${ids.length > 1 ? "" : "s"} this block`;
+  const when = overlapping[0].date_basis === "notice_dates" ? "during the reported dates" : "when the article was published (article gives no work dates)";
+  const permitsText = `City permit${ids.length > 1 ? "s" : ""} ${ids.join(", ")} cover${ids.length > 1 ? "" : "s"} this block ${when}`;
   return {
-    id: `web_notice:tosd:${slug}`,
+    id: `web_notice:${key}`,
     category: "construction_warning",
     label: ped ? "Construction reported; possible sidewalk impact" : "Construction reported nearby; pedestrian impact not stated",
     geometry: { type: "Point", coordinates: [p.lon, p.lat] },
@@ -167,6 +171,7 @@ export function noticeToObservation(notice: ConstructionNotice, matches: PermitM
         match_basis: m.match_basis,
         matched_streets: m.matched_streets,
         date_overlap: m.date_overlap,
+        date_basis: m.date_basis,
       })),
     ],
     metadata: { extraction_model: notice.extraction_model, location_confidence: "permit_block_match" },

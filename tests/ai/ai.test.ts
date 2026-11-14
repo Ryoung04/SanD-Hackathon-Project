@@ -99,7 +99,7 @@ test("imageToObservations: ai_candidate at camera point; no location -> none", a
     status: "candidate" as const, image_reference: "upload:abc", captured_at: null, requires_human_review: true as const,
     candidate_observations: [{ category: "sidewalk_obstruction" as const, explanation: "Fence near path; width unknown",
       model_confidence: "possible" as const, verification_status: "ai_candidate" as const, routing_impact: "unknown" as const }],
-    curb_ramp_visibility: "not_determinable" as const, no_clear_evidence: false, image_quality_notes: "",
+    curb_ramp_visibility: "not_determinable" as const, no_clear_evidence: false, image_quality_notes: "", dropped_for_unsupported_claims: 0,
     model: "test", analyzed_at: "2026-11-14T20:00:00.000Z",
   };
   const image = { image_reference: "upload:abc", source: "participant_upload" as const, page_url: null,

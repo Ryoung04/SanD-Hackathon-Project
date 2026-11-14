@@ -18,9 +18,10 @@
     "candidate_observations": [],
     "curb_ramp_visibility": "visibly_present",
     "no_clear_evidence": true,
-    "image_quality_notes": "Clear image showing a corner sidewalk with a curb ramp and yellow detectable warning tiles.",
+    "image_quality_notes": "The image is clear and well-lit, showing a curb ramp with detectable warning tiles.",
+    "dropped_for_unsupported_claims": 0,
     "requires_human_review": true,
-    "model": "gemini-3.6-flash",
-    "analyzed_at": "2026-11-14T19:39:51.820Z"
+    "model": "gemini-3.1-flash-lite",
+    "analyzed_at": "2026-11-14T20:05:16.526Z"
   }
 }
