@@ -1,0 +1,243 @@
+{
+  "notice": {
+    "source_url": "https://timesofsandiego.com/business/2026/11/09/san-diego-construction-parking-woes-golden-hill-cafe/",
+    "source_name": "Times of San Diego",
+    "source_type": "news_report",
+    "page_title": "Construction crews arrive, parking woes follow. Golden Hill Cafe is latest local business to feel the pain.",
+    "published_at": "2026-11-09T20:10:15Z",
+    "retrieved_at": "2026-11-14T19:39:16.463Z",
+    "retrieved_via": "bright_data_web_unlocker",
+    "construction_mentioned": true,
+    "location_text": "1101 25th St.",
+    "cross_streets": [
+      "25th Street",
+      "C Street"
+    ],
+    "date_start": null,
+    "date_end": null,
+    "pedestrian_impact_language": [],
+    "pedestrian_impact_found": false,
+    "location_confidence": "text_only",
+    "geocoding_method": "none",
+    "extraction_model": "gemini-3.6-flash"
+  },
+  "matches": [
+    {
+      "permit": {
+        "approval_id": "PMT-3450613",
+        "traffic_control_type": "Other Work",
+        "block_information": "C ST from 25TH ST to 26TH ST from 11/02/2026 at 08:00 AM to 11/10/2026 at 04:00 PM;ALLEY N/O C ST from 25TH ST to 26TH ST from 11/02/2026 at 08:00 AM to 11/10/2026 at 04:00 PM",
+        "date_start": "2026-11-02",
+        "date_end": "2026-11-10",
+        "lat": 32.717119,
+        "lon": -117.140021
+      },
+      "matched_streets": [
+        "25th",
+        "c"
+      ],
+      "match_basis": "street_pair_in_permit_block",
+      "date_overlap": "overlaps"
+    },
+    {
+      "permit": {
+        "approval_id": "PMT-3419028",
+        "traffic_control_type": "Other Work",
+        "block_information": "25TH ST from C ST to B ST from 07/01/2026 at 08:30 AM to 11/17/2026 at 03:30 PM;C ST from 25TH ST to 26TH ST from 07/01/2026 at 08:30 AM to 11/17/2026 at 03:30 PM",
+        "date_start": "2026-07-01",
+        "date_end": "2026-11-17",
+        "lat": 32.717119,
+        "lon": -117.140021
+      },
+      "matched_streets": [
+        "25th",
+        "c"
+      ],
+      "match_basis": "street_pair_in_permit_block",
+      "date_overlap": "overlaps"
+    },
+    {
+      "permit": {
+        "approval_id": "PMT-3440352",
+        "traffic_control_type": "Other Work",
+        "block_information": "C ST from 25TH ST to 26TH ST from 09/29/2026 at 08:30 AM to 11/17/2026 at 03:30 PM",
+        "date_start": "2026-09-29",
+        "date_end": "2026-11-17",
+        "lat": 32.717119,
+        "lon": -117.140021
+      },
+      "matched_streets": [
+        "25th",
+        "c"
+      ],
+      "match_basis": "street_pair_in_permit_block",
+      "date_overlap": "overlaps"
+    },
+    {
+      "permit": {
+        "approval_id": "PMT-3446077",
+        "traffic_control_type": "Other Work",
+        "block_information": "25TH ST from C ST to ALLEY N/O C ST from 10/13/2026 at 08:30 AM to 10/19/2026 at 03:30 AM",
+        "date_start": "2026-10-13",
+        "date_end": "2026-10-19",
+        "lat": 32.717119,
+        "lon": -117.140021
+      },
+      "matched_streets": [
+        "25th",
+        "c"
+      ],
+      "match_basis": "street_pair_in_permit_block",
+      "date_overlap": "no_overlap"
+    },
+    {
+      "permit": {
+        "approval_id": "PMT-3418475",
+        "traffic_control_type": "Other Work",
+        "block_information": "C ST from 25TH ST to 26TH ST from 06/29/2026 at 08:30 AM to 09/28/2026 at 03:30 AM",
+        "date_start": "2026-06-29",
+        "date_end": "2026-09-28",
+        "lat": 32.717119,
+        "lon": -117.140021
+      },
+      "matched_streets": [
+        "25th",
+        "c"
+      ],
+      "match_basis": "street_pair_in_permit_block",
+      "date_overlap": "no_overlap"
+    },
+    {
+      "permit": {
+        "approval_id": "PMT-3449313",
+        "traffic_control_type": "Other Work",
+        "block_information": "25TH ST from C ST to ALLEY N/O C ST from 10/26/2026 at 08:30 AM to 10/30/2026 at 03:30 PM",
+        "date_start": "2026-10-26",
+        "date_end": "2026-10-30",
+        "lat": 32.717119,
+        "lon": -117.140021
+      },
+      "matched_streets": [
+        "25th",
+        "c"
+      ],
+      "match_basis": "street_pair_in_permit_block",
+      "date_overlap": "no_overlap"
+    },
+    {
+      "permit": {
+        "approval_id": "PMT-3453467",
+        "traffic_control_type": "Other Work",
+        "block_information": "C ST from 25TH ST to 26TH ST from 11/18/2026 at 08:30 AM to 01/15/2027 at 03:30 PM",
+        "date_start": "2026-11-18",
+        "date_end": "2027-01-15",
+        "lat": 32.717119,
+        "lon": -117.140021
+      },
+      "matched_streets": [
+        "25th",
+        "c"
+      ],
+      "match_basis": "street_pair_in_permit_block",
+      "date_overlap": "no_overlap"
+    },
+    {
+      "permit": {
+        "approval_id": "PMT-3453483",
+        "traffic_control_type": "Other Work",
+        "block_information": "25TH ST from C ST to B ST from 11/18/2026 at 08:30 AM to 01/15/2027 at 03:30 PM;C ST from 25TH ST to 26TH ST from 11/18/2026 at 08:30 AM to 01/15/2027 at 03:30 PM",
+        "date_start": "2026-11-18",
+        "date_end": "2027-01-15",
+        "lat": 32.717119,
+        "lon": -117.140021
+      },
+      "matched_streets": [
+        "25th",
+        "c"
+      ],
+      "match_basis": "street_pair_in_permit_block",
+      "date_overlap": "no_overlap"
+    },
+    {
+      "permit": {
+        "approval_id": "PMT-3434093",
+        "traffic_control_type": "Other Work",
+        "block_information": "C ST from 25TH ST to 26TH ST from 09/25/2026 at 07:00 AM to 09/25/2026 at 04:00 PM",
+        "date_start": "2026-09-25",
+        "date_end": "2026-09-25",
+        "lat": 32.717119,
+        "lon": -117.140021
+      },
+      "matched_streets": [
+        "25th",
+        "c"
+      ],
+      "match_basis": "street_pair_in_permit_block",
+      "date_overlap": "no_overlap"
+    },
+    {
+      "permit": {
+        "approval_id": "PMT-3444594",
+        "traffic_control_type": "Other Work",
+        "block_information": "C ST from 25TH ST to 26TH ST from 10/02/2026 at 08:30 AM to 10/22/2026 at 03:30 PM",
+        "date_start": "2026-10-02",
+        "date_end": "2026-10-22",
+        "lat": 32.717119,
+        "lon": -117.140021
+      },
+      "matched_streets": [
+        "25th",
+        "c"
+      ],
+      "match_basis": "street_pair_in_permit_block",
+      "date_overlap": "no_overlap"
+    }
+  ],
+  "observation": {
+    "id": "web_notice:tosd:san-diego-construction-parking-woes-golden-hill-cafe:PMT-3450613",
+    "category": "construction_warning",
+    "label": "Construction reported nearby; pedestrian impact not stated",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -117.140021,
+        32.717119
+      ]
+    },
+    "geometry_precision": "approximate_point",
+    "source_kind": "web_notice",
+    "source_record_id": "https://timesofsandiego.com/business/2026/11/09/san-diego-construction-parking-woes-golden-hill-cafe/",
+    "source_url": "https://timesofsandiego.com/business/2026/11/09/san-diego-construction-parking-woes-golden-hill-cafe/",
+    "source_observed_at": null,
+    "source_updated_at": "2026-11-09T20:10:15Z",
+    "ingested_at": "2026-11-14T19:39:22.916Z",
+    "verification_status": "unverified_report",
+    "routing_impact": "unknown",
+    "severity": "unknown",
+    "description": "News report describes construction near 25th Street & C Street; it does not mention sidewalks. City permit PMT-3450613 covers this block.",
+    "evidence": [
+      {
+        "kind": "news_report",
+        "source_url": "https://timesofsandiego.com/business/2026/11/09/san-diego-construction-parking-woes-golden-hill-cafe/",
+        "title": "Construction crews arrive, parking woes follow. Golden Hill Cafe is latest local business to feel the pain.",
+        "published_at": "2026-11-09T20:10:15Z",
+        "retrieved_at": "2026-11-14T19:39:16.463Z",
+        "retrieved_via": "bright_data_web_unlocker",
+        "quotes": []
+      },
+      {
+        "kind": "city_traffic_control_permit",
+        "approval_id": "PMT-3450613",
+        "block_information": "C ST from 25TH ST to 26TH ST from 11/02/2026 at 08:00 AM to 11/10/2026 at 04:00 PM;ALLEY N/O C ST from 25TH ST to 26TH ST from 11/02/2026 at 08:00 AM to 11/10/2026 at 04:00 PM",
+        "date_start": "2026-11-02",
+        "date_end": "2026-11-10",
+        "match_basis": "street_pair_in_permit_block",
+        "date_overlap": "overlaps"
+      }
+    ],
+    "metadata": {
+      "extraction_model": "gemini-3.6-flash",
+      "location_confidence": "permit_block_match"
+    }
+  }
+}

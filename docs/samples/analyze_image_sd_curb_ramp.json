@@ -1,0 +1,26 @@
+{
+  "image": {
+    "image_reference": "commons:File:Curb Ramp in San Diego.jpg",
+    "source": "wikimedia_commons",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Curb_Ramp_in_San_Diego.jpg",
+    "license": "CC BY 4.0",
+    "attribution": "Mds08011",
+    "captured_at": "2020-04-23",
+    "camera_location": {
+      "lat": 32.73265,
+      "lon": -117.1602
+    }
+  },
+  "analysis": {
+    "status": "candidate",
+    "image_reference": "commons:File:Curb Ramp in San Diego.jpg",
+    "captured_at": "2020-04-23",
+    "candidate_observations": [],
+    "curb_ramp_visibility": "visibly_present",
+    "no_clear_evidence": true,
+    "image_quality_notes": "Clear image showing a corner sidewalk with a curb ramp and yellow detectable warning tiles.",
+    "requires_human_review": true,
+    "model": "gemini-3.6-flash",
+    "analyzed_at": "2026-11-14T19:39:51.820Z"
+  }
+}

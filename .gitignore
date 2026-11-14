@@ -1,0 +1,15 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# deps / build
+node_modules/
+.next/
+dist/
+out/
+
+# local data, raw images, logs
+data/raw/
+*.log
+.DS_Store
