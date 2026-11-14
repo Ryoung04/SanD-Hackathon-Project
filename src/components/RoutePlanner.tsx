@@ -3,8 +3,9 @@
 import { useState } from "react";
 import type { BarrierObservation } from "@/lib/ui/barrierTypes";
 import { SOURCE_GLYPHS, SOURCE_LABELS } from "@/lib/ui/caveats";
+import { STUDY_BBOX } from "@/lib/data/studyArea";
 import {
-  EVIDENCE_GROUPS, formatDistance, formatDuration, formatLatLon, groupNearby, parseLatLon,
+  EVIDENCE_GROUPS, inBBox, formatDistance, formatDuration, formatLatLon, groupNearby, parseLatLon,
   type LatLon, type RouteProfile, type RouteResult,
 } from "@/lib/ui/routeClient";
 
@@ -66,19 +67,27 @@ function PointField({ label, value, onChange, picking, onPick }: {
   const [shown, setShown] = useState<LatLon | null>(null);
   // Sync text when the value is set from a map click.
   if (value !== shown) { setShown(value); setText(value ? formatLatLon(value) : ""); }
-  const invalid = text.trim() !== "" && !parseLatLon(text);
+  const parsed = parseLatLon(text);
+  const invalid = text.trim() !== "" && !parsed;
+  const outside = !!parsed && !inBBox(parsed, STUDY_BBOX);
   const id = `pt-${label.toLowerCase()}`;
   return (
     <div className="field">
       <label htmlFor={id}>{label} (lat, lon)</label>
       <div className="row">
         <input
-          id={id} value={text} placeholder="32.7157, -117.1611" aria-invalid={invalid}
-          onChange={(e) => { setText(e.target.value); const v = parseLatLon(e.target.value); setShown(v); onChange(v); }}
+          id={id} value={text} placeholder="32.7157, -117.1611" aria-invalid={invalid || outside}
+          onChange={(e) => {
+            setText(e.target.value);
+            const v = parseLatLon(e.target.value);
+            const ok = v && inBBox(v, STUDY_BBOX) ? v : null;
+            setShown(ok); onChange(ok);
+          }}
         />
         <button type="button" aria-pressed={picking} onClick={onPick}>{picking ? "Click map…" : "Pick on map"}</button>
       </div>
       {invalid && <span className="error small">Enter latitude, longitude.</span>}
+      {outside && <span className="error small">Outside the downtown study area shown on the map.</span>}
     </div>
   );
 }

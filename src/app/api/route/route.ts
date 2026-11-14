@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchRoute, parseRouteRequest } from "@/lib/routing/provider";
 import { findNearRoute } from "@/lib/data/observations";
+import { STUDY_BBOX } from "@/lib/data/studyArea";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,10 @@ export async function POST(req: Request) {
   try { body = await req.json(); } catch { return err(400, "INVALID_BODY", "Body must be JSON"); }
   const parsed = parseRouteRequest(body);
   if (!parsed.ok) return err(400, "INVALID_ROUTE_REQUEST", parsed.message);
+  const [w, s, e, n] = STUDY_BBOX;
+  const inside = (p: { lat: number; lon: number }) => p.lon >= w && p.lon <= e && p.lat >= s && p.lat <= n;
+  if (!inside(parsed.req.start) || !inside(parsed.req.end))
+    return err(400, "OUTSIDE_STUDY_AREA", "Start and destination must be inside the downtown study area");
 
   const r = await fetchRoute(parsed.req);
   if (!r.ok) {

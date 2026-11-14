@@ -44,7 +44,10 @@ a { color: var(--link); }
 .banner--coverage { background: var(--surface-3); color: var(--fg); }
 
 .layout { flex: 1; display: grid; grid-template-columns: 1fr minmax(320px, 420px); min-height: 0; }
-.map-wrap { position: relative; min-height: 60vh; }
+/* overflow + isolation keep Leaflet's z-indexed panes/markers inside the map box. */
+.map-wrap { position: relative; min-height: 60vh; overflow: hidden; isolation: isolate; }
+.leaflet-container { background: var(--surface-3); }
+.study-area { stroke: var(--strong); }
 .map { position: absolute; inset: 0; }
 .map--loading { display: grid; place-items: center; color: var(--muted); }
 .loading-pill {

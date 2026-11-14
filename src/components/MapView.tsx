@@ -5,6 +5,7 @@ import type { Map as LMap, LayerGroup } from "leaflet";
 import type { BarrierObservation, BBox } from "@/lib/ui/barrierTypes";
 import { SOURCE_COLORS, SOURCE_GLYPHS, SOURCE_LABELS } from "@/lib/ui/caveats";
 import { DEFAULT_CENTER } from "@/lib/ui/fixtures";
+import { STUDY_BBOX } from "@/lib/data/studyArea";
 import type { LatLon } from "@/lib/ui/routeClient";
 
 interface Props {
@@ -37,10 +38,24 @@ export default function MapView({ observations, selectedId, onSelect, onBoundsCh
       const leaflet = await import("leaflet");
       if (cancelled || !el.current || map.current) return;
       L.current = leaflet;
-      const m = leaflet.map(el.current, { center: DEFAULT_CENTER, zoom: 16, keyboard: true });
+      // Hard-bound the map to the study area (+ small margin) so users can't pan/zoom away from the data.
+      const [w, s, e, n] = STUDY_BBOX;
+      const pad = 0.003;
+      const bounds = leaflet.latLngBounds([s - pad, w - pad], [n + pad, e + pad]);
+      const m = leaflet.map(el.current, {
+        center: DEFAULT_CENTER, zoom: 16, keyboard: true,
+        maxBounds: bounds, maxBoundsViscosity: 1.0, maxZoom: 19, worldCopyJump: false,
+      });
+      // Min zoom = the zoom at which the viewport fits inside the bounds; recompute on resize.
+      const fitMinZoom = () => m.setMinZoom(Math.min(m.getBoundsZoom(bounds, true), 18));
+      fitMinZoom();
+      m.on("resize", fitMinZoom);
+      leaflet
+        .rectangle(leaflet.latLngBounds([s, w], [n, e]), { className: "study-area", interactive: false, fill: false, weight: 2, dashArray: "8 6" })
+        .addTo(m);
       leaflet
         .tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19,
+          maxZoom: 19, noWrap: true, bounds,
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         })
         .addTo(m);

@@ -29,6 +29,10 @@ export function parseLatLon(text: string): LatLon | null {
   return { lat, lon };
 }
 
+/** True if the point is inside the given [west, south, east, north] box. */
+export const inBBox = (p: LatLon, [w, s, e, n]: readonly [number, number, number, number]) =>
+  p.lon >= w && p.lon <= e && p.lat >= s && p.lat <= n;
+
 export const formatLatLon = (p: LatLon) => `${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}`;
 
 export async function requestRoute(

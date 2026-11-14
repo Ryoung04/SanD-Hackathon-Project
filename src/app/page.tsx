@@ -8,7 +8,8 @@ import BarrierDetail from "@/components/BarrierDetail";
 import ObservationList from "@/components/ObservationList";
 import SourceLegend, { ALL_SOURCES } from "@/components/SourceLegend";
 import RoutePlanner, { type PickTarget } from "@/components/RoutePlanner";
-import { requestRoute, type LatLon, type RouteProfile, type RouteResult } from "@/lib/ui/routeClient";
+import { STUDY_BBOX } from "@/lib/data/studyArea";
+import { inBBox, requestRoute, type LatLon, type RouteProfile, type RouteResult } from "@/lib/ui/routeClient";
 
 const MapView = dynamic(() => import("@/components/MapView"), {
   ssr: false,
@@ -31,6 +32,7 @@ export default function Home() {
   const routeSeq = useRef(0);
 
   const onPick = (p: LatLon) => {
+    if (!inBBox(p, STUDY_BBOX)) return; // click in the margin outside the study area: ignore, stay in pick mode
     if (picking === "start") setStart(p); else if (picking === "end") setEnd(p);
     setPicking(null);
   };
