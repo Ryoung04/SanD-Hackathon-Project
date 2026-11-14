@@ -13,10 +13,10 @@ import PhotoReport from "@/components/PhotoReport";
 import { STUDY_BBOX } from "@/lib/data/studyArea";
 import { inBBox, requestRoute, type LatLon, type RouteProfile, type RouteResult } from "@/lib/ui/routeClient";
 
-const MapView = dynamic(() => import("@/components/MapView"), {
-  ssr: false,
-  loading: () => <div className="map map--loading">Loading map…</div>,
-});
+const mapLoading = () => <div className="map map--loading">Loading map…</div>;
+const MapView2D = dynamic(() => import("@/components/MapView"), { ssr: false, loading: mapLoading });
+// Default: MapLibre (flat + optional 3D). Fallback: Leaflet 2D via ?map=2d.
+const MapView3D = dynamic(() => import("@/components/MapView3D"), { ssr: false, loading: mapLoading });
 
 export default function Home() {
   const [all, setAll] = useState<BarrierObservation[]>([]);
@@ -26,6 +26,9 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [enabled, setEnabled] = useState<Set<SourceKind>>(() => new Set(ALL_SOURCES));
   const reqSeq = useRef(0);
+  const [use2d, setUse2d] = useState(false);
+  useEffect(() => { setUse2d(new URLSearchParams(window.location.search).get("map") === "2d"); }, []);
+  const MapView = use2d ? MapView2D : MapView3D;
   const [start, setStart] = useState<LatLon | null>(null);
   const [end, setEnd] = useState<LatLon | null>(null);
   const [picking, setPicking] = useState<PickTarget>(null);

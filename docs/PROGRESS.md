@@ -1,5 +1,12 @@
 # Progress
 
+## Owner B — Downtown 3D map (2026-11-14)
+- **Outcome:** MapLibre GL map is now the default (Leaflet 2D kept at `?map=2d`). Flat by default; a "3D view" button tilts it, showing extruded buildings (OpenFreeMap/OSM `render_height`) and stairways drawn as rising step blocks (illustrative, not measured). Toggleable "Map details" layer: sidewalks, crosswalks, crossings (thicker ring = tactile paving), curb ramps (▼ lowered / ▲ raised / ? unknown, shape + color), stairs, elevators. Clicking a context feature shows its OSM tags (labelled community-mapped, unverified). The map is bounded to `STUDY_BBOX`; colors come from `--map-*` CSS tokens.
+- **Data:** `public/data/downtown-access.geojson`, an Overpass snapshot (4,110 features: 66 steps, 541 lowered kerbs, 1,373 crossings, 2 elevators; 1.4 MB, ~100 KB gzip). Refresh: `npx tsx scripts/osm/fetch-downtown.ts`.
+- **Files:** `src/components/MapView3D.tsx`, `src/lib/map/{osmAccess,extrude}.ts`, `scripts/osm/fetch-downtown.ts`, `page.tsx`, `layout.tsx`, `globals.css`, `tests/ui/{osmAccess,extrude}.test.ts`. New dependency: `maplibre-gl@4.7.1`.
+- **Tests:** `npm run test:ui` 96 pass; typecheck and build clean. Not yet checked visually in a browser.
+- **Not done:** no satellite imagery. Building footprints come from OSM, not from our own imagery analysis.
+
 ## Owner B — Owner C UI shells (2026-11-14)
 - **Outcome:** Shells for C's features, all optional; failures never block the map or routing. Collapsible "Construction news" panel (GET /api/notices, loads on open, empty state, a "Show on map" button only when observation_id is set). "Report with a photo" form (POST /api/analyze-image: permission checkbox, 5 MB check, optional camera lat/lon; results labelled AI candidate, unverified; refetches barriers when saved). "Explain evidence" and "Read aloud" buttons on a record call /api/investigate and /api/speak and hide themselves on 404 (both 404 today). `upload:` sources render as "Participant upload (no public link)".
 - **Files:** `src/lib/ui/evidenceClient.ts`, `src/components/{NoticesPanel,PhotoReport,EvidenceActions}.tsx`, `BarrierDetail.tsx`, `page.tsx`, `globals.css`, `tests/ui/evidenceClient.test.ts`.
