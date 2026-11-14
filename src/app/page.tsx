@@ -7,6 +7,8 @@ import { debounce, filterBySource, loadBarriers } from "@/lib/ui/barrierClient";
 import BarrierDetail from "@/components/BarrierDetail";
 import ObservationList from "@/components/ObservationList";
 import SourceLegend, { ALL_SOURCES } from "@/components/SourceLegend";
+import RoutePlanner, { type PickTarget } from "@/components/RoutePlanner";
+import { requestRoute, type LatLon, type RouteProfile, type RouteResult } from "@/lib/ui/routeClient";
 
 const MapView = dynamic(() => import("@/components/MapView"), {
   ssr: false,
@@ -21,6 +23,27 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [enabled, setEnabled] = useState<Set<SourceKind>>(() => new Set(ALL_SOURCES));
   const reqSeq = useRef(0);
+  const [start, setStart] = useState<LatLon | null>(null);
+  const [end, setEnd] = useState<LatLon | null>(null);
+  const [picking, setPicking] = useState<PickTarget>(null);
+  const [route, setRoute] = useState<RouteResult | null>(null);
+  const [routing, setRouting] = useState(false);
+  const routeSeq = useRef(0);
+
+  const onPick = (p: LatLon) => {
+    if (picking === "start") setStart(p); else if (picking === "end") setEnd(p);
+    setPicking(null);
+  };
+  const submitRoute = async (profile: RouteProfile) => {
+    if (!start || !end) return;
+    const seq = ++routeSeq.current;
+    setRouting(true);
+    const r = await requestRoute(start, end, profile);
+    if (seq !== routeSeq.current) return;
+    setRoute(r);
+    setRouting(false);
+  };
+  const clearRoute = () => { routeSeq.current++; setStart(null); setEnd(null); setRoute(null); setRouting(false); setPicking(null); };
 
   const fetchBBox = useCallback(async (bbox: BBox) => {
     const seq = ++reqSeq.current;
@@ -68,11 +91,19 @@ export default function Home() {
 
       <main className="layout">
         <div className="map-wrap">
-          <MapView observations={visible} selectedId={selectedId} onSelect={setSelectedId} onBoundsChange={onBoundsChange} />
+          <MapView
+            observations={visible} selectedId={selectedId} onSelect={setSelectedId} onBoundsChange={onBoundsChange}
+            route={route?.status === "route_available" ? route.route.coordinates : null}
+            start={start} end={end} picking={picking !== null} onPick={onPick}
+          />
           {loading && <span className="loading-pill" aria-live="polite">Loading records…</span>}
         </div>
         <aside className="side">
-          {/* Sprint 2: <RoutePlanner /> goes here (POST /api/route). */}
+          <RoutePlanner
+            start={start} end={end} onStart={setStart} onEnd={setEnd} picking={picking} onPick={setPicking}
+            result={route} loading={routing} onSubmit={submitRoute} onClear={clearRoute}
+            observations={all} onSelect={setSelectedId}
+          />
           <BarrierDetail obs={selected} onClose={() => setSelectedId(null)} />
           <SourceLegend enabled={enabled} onToggle={toggle} counts={counts} />
           <ObservationList items={visible} selectedId={selectedId} onSelect={setSelectedId} />

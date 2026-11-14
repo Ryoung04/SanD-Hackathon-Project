@@ -1,26 +1,35 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Map as LMap, LayerGroup } from "leaflet";
 import type { BarrierObservation, BBox } from "@/lib/ui/barrierTypes";
 import { SOURCE_COLORS, SOURCE_GLYPHS, SOURCE_LABELS } from "@/lib/ui/caveats";
 import { DEFAULT_CENTER } from "@/lib/ui/fixtures";
+import type { LatLon } from "@/lib/ui/routeClient";
 
 interface Props {
   observations: BarrierObservation[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   onBoundsChange: (bbox: BBox) => void;
+  route?: [number, number][] | null;
+  start?: LatLon | null;
+  end?: LatLon | null;
+  /** When true, the next map click is reported via onPick. */
+  picking?: boolean;
+  onPick?: (p: LatLon) => void;
 }
 
 /** Leaflet map. Loaded client-only; all observation text is set via textContent / aria, never innerHTML from data. */
-export default function MapView({ observations, selectedId, onSelect, onBoundsChange }: Props) {
+export default function MapView({ observations, selectedId, onSelect, onBoundsChange, route, start, end, picking, onPick }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<LMap | null>(null);
   const layer = useRef<LayerGroup | null>(null);
+  const routeLayer = useRef<LayerGroup | null>(null);
+  const [ready, setReady] = useState(false);
   const L = useRef<typeof import("leaflet") | null>(null);
-  const cbs = useRef({ onSelect, onBoundsChange });
-  cbs.current = { onSelect, onBoundsChange };
+  const cbs = useRef({ onSelect, onBoundsChange, onPick, picking });
+  cbs.current = { onSelect, onBoundsChange, onPick, picking };
 
   useEffect(() => {
     let cancelled = false;
@@ -35,13 +44,18 @@ export default function MapView({ observations, selectedId, onSelect, onBoundsCh
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         })
         .addTo(m);
+      routeLayer.current = leaflet.layerGroup().addTo(m);
       layer.current = leaflet.layerGroup().addTo(m);
+      m.on("click", (e) => {
+        if (cbs.current.picking) cbs.current.onPick?.({ lat: e.latlng.lat, lon: e.latlng.lng });
+      });
       const emit = () => {
         const b = m.getBounds();
         cbs.current.onBoundsChange([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
       };
       m.on("moveend", emit);
       map.current = m;
+      setReady(true);
       emit();
     })();
     return () => {
@@ -86,7 +100,24 @@ export default function MapView({ observations, selectedId, onSelect, onBoundsCh
         }
       }
     }
-  }, [observations, selectedId]);
+  }, [observations, selectedId, ready]);
+
+  // Route line + start/end pins. Drawn under barrier markers so warnings stay clickable.
+  useEffect(() => {
+    const leaflet = L.current, group = routeLayer.current, m = map.current;
+    if (!leaflet || !group || !m) return;
+    group.clearLayers();
+    if (route && route.length >= 2) {
+      const latlngs = route.map(([lon, lat]) => [lat, lon] as [number, number]);
+      leaflet.polyline(latlngs, { className: "route-line", weight: 7, opacity: 0.85 }).addTo(group);
+      m.fitBounds(leaflet.latLngBounds(latlngs), { padding: [40, 40] });
+    }
+    for (const [p, kind, text] of [[start, "start", "A"], [end, "end", "B"]] as const) {
+      if (!p) continue;
+      const icon = leaflet.divIcon({ className: "", html: `<span class="pin pin--${kind}">${text}</span>`, iconSize: [30, 30], iconAnchor: [15, 15] });
+      leaflet.marker([p.lat, p.lon], { icon, title: kind === "start" ? "Trip start" : "Trip destination", keyboard: false, interactive: false }).addTo(group);
+    }
+  }, [route, start, end, ready]);
 
   // Pan to selection made from the list.
   useEffect(() => {
@@ -103,5 +134,5 @@ export default function MapView({ observations, selectedId, onSelect, onBoundsCh
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
 
-  return <div ref={el} className="map" role="region" aria-label="Map of potential accessibility barriers" />;
+  return <div ref={el} className={`map${picking ? " map--picking" : ""}`} role="region" aria-label="Map of potential accessibility barriers" />;
 }
