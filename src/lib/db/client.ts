@@ -7,5 +7,6 @@ export type Sql = ReturnType<typeof neon>;
 export function getSql(): Sql | null {
   const url = process.env.DATABASE_URL;
   if (!url) return null;
-  return neon(url);
+  // no-store: stop Next.js's fetch data cache from serving stale query results.
+  return neon(url, { fetchOptions: { cache: 'no-store' } });
 }

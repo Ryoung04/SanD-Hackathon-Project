@@ -4,10 +4,13 @@ import path from 'node:path';
 import { getSql } from '@/lib/db/client';
 import { validateObservation } from './normalizers';
 import { bboxOfGeometry, intersectsBbox, geometryDistanceToLine, padBbox } from './geo';
-import type { BarrierObservation, Bbox, Category, ListResult, LineStringGeometry } from './types';
+import type { DataMode, BarrierObservation, Bbox, Category, ListResult, LineStringGeometry } from './types';
 
 export const DEFAULT_LIMIT = 200;
 export const MAX_LIMIT = 500;
+
+/** SQL predicate for a current record: not marked outdated, and not a traffic permit past its date_end. Mirrors isCurrent(). */
+export const CURRENT_SQL = `(verification_status <> 'outdated' AND NOT (source_kind = 'traffic_control' AND COALESCE((metadata_json->>'date_end')::timestamptz < NOW(), false)))`;
 
 const RESTRICTED_KINDS = ['street_imagery_ai', 'web_notice', 'community_report', 'other'];
 
@@ -61,18 +64,15 @@ export async function listObservations(opts: { bbox: Bbox; categories?: Category
     for (let guard = 0; guard < 20 && matched.length < limit + 1; guard++) {
       const rows = (await sql(
         `SELECT * FROM barrier_observations
-         WHERE min_lon <= $3 AND max_lon >= $1 AND min_lat <= $4 AND max_lat >= $2
+         WHERE geom && ST_MakeEnvelope($1,$2,$3,$4,4326) AND ST_Intersects(geom, ST_MakeEnvelope($1,$2,$3,$4,4326))
+           AND ${CURRENT_SQL}
            AND ($5::text[] IS NULL OR category = ANY($5::text[]))
            AND id > $6
-           AND verification_status <> 'outdated'
-           AND NOT (source_kind = 'traffic_control' AND (metadata_json->>'date_end')::timestamptz < NOW())
          ORDER BY id LIMIT $7`,
         [bbox[0], bbox[1], bbox[2], bbox[3], categories && categories.length ? categories : null, after, batch],
       )) as any[];
-      for (const r of rows) {
-        const o = rowToObs(r);
-        if (intersectsBbox(o.geometry, bbox)) matched.push(o);
-      }
+      for (const r of rows) matched.push(rowToObs(r));
+      if (matched.length >= limit + 1) break;
       if (rows.length < batch) break;
       after = rows[rows.length - 1].id;
     }
@@ -161,8 +161,8 @@ export async function upsertObservations(obs: BarrierObservation[]): Promise<{ i
           `INSERT INTO barrier_observations
             (id, category, label, geometry_json, geometry_precision, source_kind, source_record_id, source_url,
              source_observed_at, source_updated_at, ingested_at, verification_status, routing_impact, severity,
-             description, evidence_json, metadata_json, min_lon, min_lat, max_lon, max_lat)
-           VALUES ($1,$2,$3,$4::jsonb,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17::jsonb,$18,$19,$20,$21)
+             description, evidence_json, metadata_json, min_lon, min_lat, max_lon, max_lat, geom)
+           VALUES ($1,$2,$3,$4::jsonb,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17::jsonb,$18,$19,$20,$21,ST_SetSRID(ST_GeomFromGeoJSON($4),4326))
            ON CONFLICT (id) DO UPDATE SET
              category=EXCLUDED.category, label=EXCLUDED.label, geometry_json=EXCLUDED.geometry_json,
              geometry_precision=EXCLUDED.geometry_precision, source_kind=EXCLUDED.source_kind,
@@ -171,7 +171,7 @@ export async function upsertObservations(obs: BarrierObservation[]): Promise<{ i
              ingested_at=NOW(), verification_status=EXCLUDED.verification_status,
              routing_impact=EXCLUDED.routing_impact, severity=EXCLUDED.severity, description=EXCLUDED.description,
              evidence_json=EXCLUDED.evidence_json, metadata_json=EXCLUDED.metadata_json,
-             min_lon=EXCLUDED.min_lon, min_lat=EXCLUDED.min_lat, max_lon=EXCLUDED.max_lon, max_lat=EXCLUDED.max_lat
+             min_lon=EXCLUDED.min_lon, min_lat=EXCLUDED.min_lat, max_lon=EXCLUDED.max_lon, max_lat=EXCLUDED.max_lat, geom=EXCLUDED.geom
            RETURNING (xmax = 0) AS inserted`,
           [o.id, o.category, o.label, JSON.stringify(o.geometry), o.geometry_precision, o.source_kind, o.source_record_id,
            o.source_url, o.source_observed_at, o.source_updated_at, o.ingested_at, o.verification_status, o.routing_impact,
@@ -197,6 +197,18 @@ export async function upsertObservations(obs: BarrierObservation[]): Promise<{ i
 }
 
 export async function findNearRoute(line: LineStringGeometry, thresholdM = 30): Promise<{ id: string; distance_m: number; match_method: string }[]> {
+  const sqlDb = getSql();
+  if (sqlDb) {
+    const rows = (await sqlDb(
+      `SELECT id, ROUND(ST_Distance(geom::geography, ST_SetSRID(ST_GeomFromGeoJSON($1),4326)::geography)::numeric, 1)::float8 AS distance_m
+       FROM barrier_observations
+       WHERE ${CURRENT_SQL}
+         AND ST_DWithin(geom::geography, ST_SetSRID(ST_GeomFromGeoJSON($1),4326)::geography, $2)
+       ORDER BY distance_m, id`,
+      [JSON.stringify(line), thresholdM],
+    )) as any[];
+    return rows.map((r) => ({ id: r.id, distance_m: Number(r.distance_m), match_method: `within_${thresholdM}m_approximate` }));
+  }
   const raw = bboxOfGeometry(line);
   const bbox = padBbox(raw, thresholdM);
   const out: { id: string; distance_m: number; match_method: string }[] = [];
@@ -223,4 +235,10 @@ export async function countByKindCategory(): Promise<{ source_kind: string; cate
   const m = new Map<string, number>();
   for (const o of readStore().observations) { const k = `${o.source_kind}|${o.category}`; m.set(k, (m.get(k) ?? 0) + 1); }
   return [...m.entries()].sort().map(([k, n]) => { const [source_kind, category] = k.split('|'); return { source_kind, category, n }; });
+}
+
+/** All observations from the file store (used by listSources when no DB). */
+export function readFileStoreObservations(): { data_mode: DataMode; observations: BarrierObservation[] } {
+  const s = readStore();
+  return { data_mode: s.data_mode, observations: s.observations };
 }

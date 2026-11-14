@@ -3,6 +3,7 @@ import { findNearRoute } from '@/lib/data/observations';
 import type { LineStringGeometry } from '@/lib/data/types';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 const err = (status: number, code: string, message: string) =>
   NextResponse.json({ error: { code, message } }, { status });

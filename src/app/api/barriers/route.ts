@@ -4,6 +4,7 @@ import { parseBbox } from '@/lib/data/geo';
 import { parseQuery } from '@/lib/data/query';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 const err = (status: number, code: string, message: string) =>
   NextResponse.json({ error: { code, message } }, { status });
