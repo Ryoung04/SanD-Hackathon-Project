@@ -87,6 +87,9 @@ const VISION_PROMPT =
   "You review a street photo for POTENTIAL pedestrian accessibility barriers. Describe only what is visible. " +
   "Do not state location, street names, dates, or sources. Do not claim ADA compliance, safety, or passability, and do not measure slope or width. " +
   "A ramp that is not visible is not proof of absence. Fencing, cones, vehicles, poles, or debris on or beside the walking path are worth flagging as possible obstructions. " +
+  "Only flag objects physically ON the sidewalk, curb ramp or crosswalk. Vehicles in the roadway or parked at the curb are NOT obstructions. " +
+  "If you cannot see the sidewalk surface, do not flag anything on it. Never flag people, tents, or personal belongings. " +
+  "Use model_confidence \"likely\" only when the object is clearly visible on the walking surface. " +
   "If nothing is clearly visible, return an empty candidate list and no_clear_evidence=true. " +
   "Keep each explanation to one sentence and say what cannot be verified from the photo.";
 

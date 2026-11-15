@@ -17,13 +17,17 @@ vi.mock("@mastra/core/agent", () => ({
       await this.tools.get_barrier.execute({});
       await this.tools.get_nearby_records.execute(agentState.calls ?? { radius_m: 100 });
       await this.tools.get_construction_notices.execute({});
+      await this.tools.get_image_evidence.execute({});
       agentState.gens++;
       const object = agentState.queue.length ? agentState.queue.shift() : agentState.draft;
+      if (object === "ABORTED") return { object: undefined, finishReason: "aborted", response: { modelId: "test-model" } };
       return { object, response: { modelId: "test-model" } };
     }
   },
 }));
 vi.mock("@/lib/data/observations", () => ({ listObservations: vi.fn() }));
+const imageCheck: { value: unknown } = { value: null };
+vi.mock("@/lib/ai/imageryChecks", () => ({ getImageryCheck: () => imageCheck.value }));
 vi.mock("@/lib/web/noticeStore", () => ({ readNoticeCache: () => ({ refreshed_at: null, queries: [], cards: [], errors: [] }) }));
 
 import { listObservations } from "@/lib/data/observations";
@@ -57,6 +61,7 @@ beforeEach(() => {
   agentState.throwMsg = null;
   agentState.queue = [];
   agentState.gens = 0;
+  imageCheck.value = null;
   mList.mockReset();
   mList.mockResolvedValue({ data: [BARRIER, NEAR, FAR], meta: {} } as any);
   process.env.GEMINI_API_KEY = "test";
@@ -93,8 +98,8 @@ describe("finalizeBrief", () => {
 describe("investigateBarrier (fake agent, real tools)", () => {
   it("binds tools to the barrier, filters by radius, records a trace", async () => {
     const r = await investigateBarrier({ barrier_id: "city_gis:1", lat: 32.7188, lon: -117.1674 });
-    expect(agentState.tools.sort()).toEqual(["get_barrier", "get_construction_notices", "get_nearby_records"]);
-    expect(r.trace.map((t) => t.tool)).toEqual(["get_barrier", "get_nearby_records", "get_construction_notices"]);
+    expect(agentState.tools.sort()).toEqual(["get_barrier", "get_construction_notices", "get_image_evidence", "get_nearby_records"]);
+    expect(r.trace.map((t) => t.tool)).toEqual(["get_barrier", "get_nearby_records", "get_construction_notices", "get_image_evidence"]);
     expect(r.trace[1].result_ids).toEqual(["city_311:9"]); // FAR excluded
     expect(r.brief.supporting_observation_ids).toEqual(["city_gis:1", "city_311:9"]);
     expect(r.model).toBe("test-model");
@@ -121,6 +126,24 @@ describe("investigateBarrier (fake agent, real tools)", () => {
     agentState.throwMsg = "503 overloaded";
     await expect(investigateBarrier({ barrier_id: "city_gis:1", lat: 32.7188, lon: -117.1674 })).rejects.toMatchObject({ code: "AI_UPSTREAM" });
   });
+  it("photo page is citable as a link but never as an observation id", async () => {
+    const page = "https://www.mapillary.com/app/?pKey=123";
+    imageCheck.value = {
+      barrier_id: "city_gis:1", status: "analyzed", observation_ids: ["street_imagery_ai:mapillary:123:0"],
+      image: { reference: "mapillary:123", page_url: page, captured_at: "2025-01-01", license: "CC BY-SA 4.0", attribution: "x", distance_m: 5, heading_off_deg: 10 },
+      curb_ramp_visibility: "not_visible", no_clear_evidence: false, candidates: [], image_quality_notes: "", model: "m",
+    };
+    agentState.draft = { ...(agentState.draft as object), supporting_observation_ids: [`link:${page}`, "street_imagery_ai:mapillary:123:0"], source_links: [page] };
+    const r = await investigateBarrier({ barrier_id: "city_gis:1", lat: 32.7188, lon: -117.1674 });
+    expect(r.brief.source_links).toEqual([page]);
+    expect(r.brief.supporting_observation_ids).toEqual(["city_gis:1", "street_imagery_ai:mapillary:123:0"]);
+    expect(r.trace[3]).toMatchObject({ tool: "get_image_evidence", result_ids: ["street_imagery_ai:mapillary:123:0"] });
+  });
+  it("deadline abort returned (not thrown) by Mastra is a TIMEOUT, not INVALID_OUTPUT", async () => {
+    agentState.queue = ["ABORTED"];
+    await expect(investigateBarrier({ barrier_id: "city_gis:1", lat: 32.7188, lon: -117.1674 })).rejects.toMatchObject({ code: "TIMEOUT" });
+    expect(agentState.gens).toBe(1);
+  });
   it("retries once when the first structured output is malformed", async () => {
     agentState.queue = [undefined];
     const r = await investigateBarrier({ barrier_id: "city_gis:1", lat: 32.7188, lon: -117.1674 });
@@ -140,12 +163,12 @@ describe("POST /api/investigate", () => {
     POST(new Request("http://localhost/api/investigate", { method: "POST", headers: { "x-forwarded-for": ip }, body: typeof body === "string" ? body : JSON.stringify(body) }));
 
   it("200 with brief + mastra meta", async () => {
-    const res = await call({ barrier_id: "city_gis:1", lat: 32.7188, lon: -117.1674 });
+    const res = await call({ barrier_id: "city_gis:1", lat: 32.7188, lon: -117.1674, mode: "agent" });
     expect(res.status).toBe(200);
     const j = await res.json();
     expect(j.recommendation_type).toBe("informational_only");
     expect(j.meta.agent).toBe("mastra");
-    expect(j.meta.tool_calls).toHaveLength(3);
+    expect(j.meta.tool_calls).toHaveLength(4);
   });
   it.each([
     ["not json", 400, "BAD_REQUEST"],
@@ -158,14 +181,37 @@ describe("POST /api/investigate", () => {
     expect(res.status).toBe(status);
     expect((await res.json()).error.code).toBe(code);
   });
+  it("default mode is the instant rule-based brief (no model call)", async () => {
+    agentState.throwMsg = "model must not be called";
+    const res = await call({ barrier_id: "city_gis:1", lat: 32.7188, lon: -117.1674 });
+    expect(res.status).toBe(200);
+    const j = await res.json();
+    expect(j.meta).toMatchObject({ agent: "rules", mode: "quick", tool_calls: [] });
+    expect(j.supporting_observation_ids).toEqual(["city_gis:1", "city_311:9"]);
+    expect(j.summary).toMatch(/Within 100 m: 1 open 311/);
+  });
   it("504 on agent timeout", async () => {
     agentState.throwMsg = "aborted";
-    const res = await call({ barrier_id: "city_gis:1", lat: 32.7188, lon: -117.1674 });
+    const res = await call({ barrier_id: "city_gis:1", lat: 32.7188, lon: -117.1674, mode: "agent" });
     expect(res.status).toBe(504);
   });
   it("rate limits per IP", async () => {
     let last = 0;
     for (let i = 0; i < 7; i++) last = (await call({ barrier_id: "missing", lat: 32.7188, lon: -117.1674 }, "10.9.9.9")).status;
     expect(last).toBe(429);
+  });
+});
+
+import { BriefDraft } from "@/lib/agents/brief";
+describe("BriefDraft leniency", () => {
+  it("trims over-long text and over-long lists instead of failing", () => {
+    const r = BriefDraft.parse({
+      summary: "s".repeat(900), supporting_observation_ids: Array(30).fill("x"), source_links: [],
+      conflicts: [], uncertainties: ["u".repeat(500), ...Array(12).fill("ok")],
+    });
+    expect(r.summary.length).toBe(800);
+    expect(r.supporting_observation_ids).toHaveLength(20);
+    expect(r.uncertainties).toHaveLength(10);
+    expect(r.uncertainties[0].length).toBe(300);
   });
 });

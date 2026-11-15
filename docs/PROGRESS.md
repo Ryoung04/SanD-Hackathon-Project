@@ -1,5 +1,10 @@
 # Progress
 
+## Owner C — reliable briefs + imagery review (2026-11-14 evening)
+- Gemini free tier can't sustain runtime agent calls (3.5-flash quota exhausted; flash-lite hangs → 45 s timeouts). Fix: `/api/investigate` defaults to an instant rule-based brief (`src/lib/agents/quickBrief.ts`, 0.1–0.4 s live); Mastra agent is opt-in `mode:"agent"` (step limit 10, aborted→TIMEOUT, long text trimmed).
+- Imagery: `src/lib/ai/{mapillary,imageryChecks,imageryPipeline}.ts`, `npm run ai:imagery`, `npm run ai:import-review`. Mapillary photos for 88 ramp intersections; Gemini pass was noisy → quality gate (`candidateGate`) → replaced by blind Claude-Haiku subagent review (70 photos): 1 ramp visible, 69 can't tell, 3 obstructions. Neon: 3 current street_imagery_ai, 68 marked outdated.
+- Tests: `npm test` 271 pass + 1 todo; `test:ui` 44.
+
 ## Owner C (on A's files, team-approved) — wider study area + Missing APS (2026-11-14)
 - `STUDY_BBOX` → [-117.175, 32.705, -117.135, 32.735] (adds East Village, Golden Hill, Barrio Logan edge). Map bounds/route planner follow it automatically.
 - New: PROWAG layer 1 "Missing APS" → `city_gis:prowag1:<oid>`, `crossing_issue`, `routing_impact: informational`. Fetched inside the prowag step because `markOutdated` is per source_kind.

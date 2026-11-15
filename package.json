@@ -14,7 +14,9 @@
     "coverage": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ingest/check-coverage.ts",
     "ai:notice": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/notice-pipeline.ts",
     "ai:image": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/analyze-sample.ts",
-    "ai:investigate": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/investigate-sample.ts"
+    "ai:investigate": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/investigate-sample.ts",
+    "ai:imagery": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/imagery-check.ts",
+    "ai:import-review": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/import-photo-review.ts"
   },
   "dependencies": {
     "@mastra/core": "^1.83.0",

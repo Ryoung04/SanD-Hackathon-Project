@@ -25,6 +25,12 @@
 - Real call 2026-11-14: spoke the Mastra brief summary for `city_gis:prowag2:3575` (326 chars) → 145 KB MP3 (44.1 kHz, 64 kbps) in 0.9 s.
 - Endpoint: `POST /api/speak` reads only on-screen text (≤600 chars), rejects forbidden accessibility claims, caches identical text, 5/min/IP, 3000-char/day cap. Text stays visible; audio is never the only path.
 
+## Gemini — imagery batch (honest outcome)
+- 2026-11-14: Mapillary (CC BY-SA 4.0) photos for 88 city curb-ramp intersections → Gemini vision: 70 analyzed, 16 no photo, 2 rate-limited. Output was noisy (54/70 "likely obstruction", mostly parked cars / hedged). A deterministic quality gate hid 46; the rest were later **superseded** by the Claude review below. Free-tier quota on `gemini-3.5-flash` was exhausted by this run.
+
+## Claude (via Claude Code subagents) — blind photo review
+- Same 70 photos, shrunk to 640 px, reviewed blind (no city data shown) by two Claude Haiku subagents (~59k tokens each, ~90 s). Verdicts: ramp visible 1, can't tell 69 (side-facing dashcam shots rarely show the corner); 3 sidewalk obstructions (construction fence/cones, dumpsters). Two spot-checked by hand. Files: `docs/samples/photo_review/`. Stored as `ai_candidate` with `model` = reviewer label. This is AI review, not human verification.
+
 ## Vultr — hosts the full web app
 - Instance `accesspath-sd-demo`: `vc2-1c-1gb` (1 vCPU / 1 GB, $5/mo), region `lax`, Ubuntu 24.04, created 2026-11-14 via Vultr API. Backups off, ufw 22/80/443 only.
 - Runs: the whole Next.js app (map UI + `/api/barriers`, `/api/route`, `/api/notices`, `/api/investigate`, `/api/speak`) as systemd service under a non-root user, behind Caddy with Let's Encrypt TLS.

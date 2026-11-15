@@ -1,11 +1,12 @@
 // POST /api/investigate — Mastra evidence brief for one map record (Owner C, OWNER_C §6).
-// Body: { "barrier_id": string, "lat": number, "lon": number }  (lat/lon = the record's marker)
+// Body: { "barrier_id": string, "lat": number, "lon": number, "mode"?: "quick" | "agent" }  (lat/lon = the record's marker)
+// mode "quick" (default): instant rule-based brief, no AI call. mode "agent": live Mastra agent (8–45 s, may 504).
 // 200: { barrier_id, summary, supporting_observation_ids, source_links, conflicts, uncertainties,
 //        recommendation_type: "informational_only", meta: { agent, model, tool_calls[] } }
 // Errors: { error: { code, message } } — BAD_REQUEST 400, INVALID_LOCATION 400, NOT_FOUND 404,
 //         RATE_LIMITED 429, AI_UPSTREAM/INVALID_OUTPUT 502, TIMEOUT 504, CONFIG 500.
 import { NextResponse } from "next/server";
-import { investigateBarrier, InvestigateError } from "@/lib/agents/investigate";
+import { investigateBarrier, quickInvestigate, InvestigateError } from "@/lib/agents/investigate";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -41,12 +42,21 @@ export async function POST(req: Request) {
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || !inSanDiego(lat, lon))
     return err(400, "INVALID_LOCATION", "lat/lon must be the record's location in San Diego County");
 
+  const mode = (raw as { mode?: unknown }).mode === "agent" ? "agent" : "quick";
   try {
+    if (mode === "quick") {
+      const q = await quickInvestigate({ barrier_id: b.barrier_id, lat, lon });
+      return NextResponse.json({
+        ...q.brief,
+        meta: { agent: "rules", mode, model: null, tool_calls: [], note: "Built from the listed public records; no AI summary. Not a verification of current conditions." },
+      });
+    }
     const r = await investigateBarrier({ barrier_id: b.barrier_id, lat, lon });
     return NextResponse.json({
       ...r.brief,
       meta: {
         agent: "mastra",
+        mode,
         model: r.model,
         tool_calls: r.trace.map((t) => ({ tool: t.tool, input: t.input, result_count: t.result_ids.length, ms: t.ms })),
         note: "AI-generated summary of the listed records only. Not a verification of current conditions.",
