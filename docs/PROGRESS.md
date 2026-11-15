@@ -1,5 +1,12 @@
 # Progress
 
+## Owner C (on A's files, team-approved) — wider study area + Missing APS (2026-11-14)
+- `STUDY_BBOX` → [-117.175, 32.705, -117.135, 32.735] (adds East Village, Golden Hill, Barrio Logan edge). Map bounds/route planner follow it automatically.
+- New: PROWAG layer 1 "Missing APS" → `city_gis:prowag1:<oid>`, `crossing_issue`, `routing_impact: informational`. Fetched inside the prowag step because `markOutdated` is per source_kind.
+- `ingest`/`ingest:safe`/`coverage` now also read `.env` (env vars still win, so ingest:safe keeps its branch URL — verified).
+- Live ingest to Neon: city_gis 165 (88 ramp + 77 APS), traffic_control 119 active, city_311 1194 (of 10,293 rows in bbox), 0 rejected. Total 1479 current. Golden Hill notice now has 21 records within 200 m.
+- Tests: `npm test` 241 pass + 1 todo (`tests/data/prowagAps.test.ts`), `test:ui` 44.
+
 ## Owner C — Vultr deploy (2026-11-14)
 - **Live:** https://140-82-17-18.sslip.io — full app on Vultr `vc2-1c-1gb` (lax), Caddy TLS, Neon data. Redeploy: `scripts/deploy/vultr-deploy.sh 140.82.17.18` (needs `~/.ssh/accesspath_vultr`, Aidan's machine). Server env = Gemini + ElevenLabs + DATABASE_URL only.
 - `/api/investigate` now retries once on malformed structured output (seen 1/6 live). `npm test` 233 pass + 1 todo.

@@ -60,7 +60,7 @@ async function main() {
     const cs = neonCli(['connection-string', name, '--project-id', project, '--pooled'], true);
     if (cs.code !== 0 || !cs.out) throw new Error('could not get branch connection string');
     const branchUrl = cs.out.split('\n').pop() as string;
-    const run = spawnSync('npx', ['tsx', '--env-file-if-exists=.env.local', '--conditions=react-server', 'scripts/ingest/run-all.ts'], {
+    const run = spawnSync('npx', ['tsx', '--env-file-if-exists=.env', '--env-file-if-exists=.env.local', '--conditions=react-server', 'scripts/ingest/run-all.ts'], {
       encoding: 'utf8', env: { ...process.env, DATABASE_URL: branchUrl, NEON_INGEST_BRANCH: name },
     });
     console.log(redact(run.stdout ?? '').trim());

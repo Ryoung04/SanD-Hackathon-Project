@@ -9,9 +9,9 @@
     "test": "vitest run",
     "test:ui": "node --import tsx --test tests/ui/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "ingest": "tsx --env-file-if-exists=.env.local --conditions=react-server scripts/ingest/run-all.ts",
-    "ingest:safe": "tsx --env-file-if-exists=.env.local --conditions=react-server scripts/ingest/branch-ingest.ts",
-    "coverage": "tsx --env-file-if-exists=.env.local --conditions=react-server scripts/ingest/check-coverage.ts",
+    "ingest": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ingest/run-all.ts",
+    "ingest:safe": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ingest/branch-ingest.ts",
+    "coverage": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ingest/check-coverage.ts",
     "ai:notice": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/notice-pipeline.ts",
     "ai:image": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/analyze-sample.ts",
     "ai:investigate": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/investigate-sample.ts"
