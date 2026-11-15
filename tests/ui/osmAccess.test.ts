@@ -198,3 +198,12 @@ test("overpassQuery: bbox [w,s,e,n] is emitted as (south,west,north,east)", () =
   const q = overpassQuery([-117.175, 32.712, -117.15, 32.73]);
   assert.ok(q.includes("(32.712,-117.175,32.73,-117.15)"), "bbox string in (s,w,n,e) order");
 });
+
+test("classifyWay: ramp only when explicitly tagged ramp or non-flat incline; untagged is not assumed flat or ramp", () => {
+  assert.equal(classifyWay({ highway: "footway", ramp: "yes" }), "ramp");
+  assert.equal(classifyWay({ highway: "footway", footway: "sidewalk", incline: "6%" }), "ramp");
+  assert.equal(classifyWay({ highway: "path", incline: "up" }), "ramp");
+  assert.equal(classifyWay({ highway: "footway", footway: "sidewalk", incline: "0%" }), "sidewalk");
+  assert.equal(classifyWay({ highway: "footway", footway: "sidewalk" }), "sidewalk");
+  assert.equal(classifyWay({ highway: "steps", ramp: "yes" }), "steps");
+});

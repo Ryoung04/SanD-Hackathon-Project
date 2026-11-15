@@ -21,13 +21,25 @@
   --ai: #ede9fe;
   --ai-fg: #4c1d95;
   /* Map palette (read by MapView3D at load) */
+  /* Colorblind-safe overlays (Okabe-Ito hues, darkened for >=3:1 on the pastel base) */
   --map-building: #dfe3ea;
   --map-building-top: #c5ccd8;
-  --map-sidewalk: #94a3b8;
-  --map-crossing: #475569;
-  --map-steps: #c2410c;
-  --map-kerb-lowered: #0f766e;
-  --map-kerb-raised: #b45309;
+  --map-b-low: #f6ead8;      /* pastel height ramp (decorative) */
+  --map-b-mid: #f2d3c2;
+  --map-b-high: #dccbe9;
+  --map-b-tower: #bccbe8;
+  --map-sidewalk: #0f86ad;
+  --map-crossing: #1e293b;
+  --map-steps: #d55e00;
+  --map-ramp: #a8458a;
+  /* Slope bands (viridis-like: lightness falls as slope rises, so order reads without hue) */
+  --map-slope-level: #5ec962;
+  --map-slope-gentle: #21918c;
+  --map-slope-moderate: #3b528b;
+  --map-slope-steep: #6a2c8f;
+  --map-slope-very-steep: #2a0a3d;
+  --map-kerb-lowered: #007a5a;
+  --map-kerb-raised: #b06d00;
   --map-kerb-unknown: #64748b;
   --map-elevator: #6d28d9;
   --radius: 8px;
@@ -152,10 +164,18 @@ blockquote { margin: 0.25rem 0; padding-left: 0.5rem; border-left: 3px solid var
 .map-layers label { display: flex; align-items: center; gap: 0.4rem; min-height: 32px; }
 .map-layers input { min-height: auto; }
 .swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid var(--border); }
-.swatch--buildings { background: var(--map-building-top); }
+.swatch--buildings { background: linear-gradient(135deg, var(--map-b-low), var(--map-b-high)); }
 .swatch--paths { background: var(--map-sidewalk); }
 .swatch--kerbs { background: var(--map-kerb-lowered); border-radius: 50%; }
-.swatch--steps { background: var(--map-steps); }
+.swatch--steps { background: repeating-linear-gradient(90deg, var(--map-steps) 0 4px, #fff 4px 6px); }
+.swatch--ramps { background: var(--map-ramp); }
+.swatch--slope { background: linear-gradient(90deg, var(--map-slope-level), var(--map-slope-moderate), var(--map-slope-very-steep)); }
+.swatch--slope-level { background: var(--map-slope-level); }
+.swatch--slope-gentle { background: var(--map-slope-gentle); }
+.swatch--slope-moderate { background: var(--map-slope-moderate); }
+.swatch--slope-steep { background: var(--map-slope-steep); }
+.swatch--slope-very-steep { background: var(--map-slope-very-steep); }
+.slope-legend { list-style: none; padding: 0; margin: 4px 0; display: grid; gap: 2px; font-size: 0.85em; }
 .swatch--elevators { background: var(--map-elevator); border-radius: 50%; }
 .access-popup dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.1rem 0.5rem; margin: 0.3rem 0; }
 .access-popup dt { font-weight: 600; }

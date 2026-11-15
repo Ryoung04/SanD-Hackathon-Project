@@ -1,5 +1,12 @@
 # Progress
 
+## Owner B — Ramp/slope detail + C access-feed contract (2026-11-14)
+- **Outcome:** the map gets a "Ramps" layer (R = mapped, hollow ? = unconfirmed candidate) and a "Slope (where known)" layer. Slope bands go from light (gentle) to dark (steep), with a "~6%" label when a value is not measured; solid lines = measured/official, dashed = estimate. The popup shows ramp type, slope, cross slope, width, surface, handrail, landing, source, date, method, status and confidence. The base map is now colorful (pastel), with a "Plain colors" toggle.
+- **More ramps:** OSM snapshot refreshed (4,271 features: 5 tagged ramp paths, 541 lowered curbs = curb ramps, and **161 inferred curb-ramp candidates**, i.e. crossings with tactile paving but no curb mapped within 10 m; labelled inferred/low confidence).
+- **Ready for C:** `GET /api/access-features` is optional (a 404 leaves OSM only). The contract and adapter config are in `src/lib/map/accessContract.ts`; the spec is under "To Owner C … access-detail endpoint" in `docs/OWNER_B_REQUESTS.md`; the sample is `docs/samples/access_features_v1.json`.
+- **Files:** `src/lib/map/{accessContract,accessClient,osmAccess}.ts`, `MapView3D.tsx`, `globals.css`, `public/data/downtown-access.geojson`, `tests/ui/accessContract.test.ts`.
+- **Tests:** `npm run test:ui` 107 pass; typecheck and build clean. Not yet checked visually in a browser.
+
 ## Owner B — Downtown 3D map (2026-11-14)
 - **Outcome:** MapLibre GL map is now the default (Leaflet 2D kept at `?map=2d`). Flat by default; a "3D view" button tilts it, showing extruded buildings (OpenFreeMap/OSM `render_height`) and stairways drawn as rising step blocks (illustrative, not measured). Toggleable "Map details" layer: sidewalks, crosswalks, crossings (thicker ring = tactile paving), curb ramps (▼ lowered / ▲ raised / ? unknown, shape + color), stairs, elevators. Clicking a context feature shows its OSM tags (labelled community-mapped, unverified). The map is bounded to `STUDY_BBOX`; colors come from `--map-*` CSS tokens.
 - **Data:** `public/data/downtown-access.geojson`, an Overpass snapshot (4,110 features: 66 steps, 541 lowered kerbs, 1,373 crossings, 2 elevators; 1.4 MB, ~100 KB gzip). Refresh: `npx tsx scripts/osm/fetch-downtown.ts`.

@@ -6,9 +6,11 @@
  */
 
 export type AccessKind =
-  | "steps" | "sidewalk" | "crossing_line" | "footway" | "pedestrian_area"
+  | "steps" | "ramp" | "sidewalk" | "crossing_line" | "footway" | "pedestrian_area"
   | "kerb_lowered" | "kerb_raised" | "kerb_unknown"
-  | "crossing" | "elevator";
+  | "crossing" | "elevator"
+  | "entrance"        // building entrance with a wheelchair or ramp tag
+  | "ramp_candidate"; // INFERRED, not mapped: see inferRampCandidates()
 
 export interface AccessProps {
   kind: AccessKind;
@@ -20,6 +22,10 @@ export interface AccessProps {
   handrail: "yes" | "no" | "unknown";
   ramp: "yes" | "no" | "unknown"; // ramp / ramp:wheelchair on steps
   signals: "yes" | "no" | "unknown"; // crossings
+  incline: string | null; // raw OSM incline tag (e.g. "5%", "up"); slope is unverified
+  width_m?: number | null; // OSM width tag (metres), unverified
+  ramp_type?: "curb_ramp" | "building_ramp" | "path_ramp" | "stair_ramp" | "unknown";
+  reason?: string; // why an inferred candidate exists
   name: string | null;
 }
 
@@ -40,6 +46,7 @@ const wc = (v: string | undefined): AccessProps["wheelchair"] => (v === "yes" ||
 
 export function classifyNode(t: Tags): AccessKind | null {
   if (t.highway === "elevator") return "elevator";
+  if (t.entrance && (t.wheelchair || t.ramp || t["ramp:wheelchair"])) return "entrance";
   if (t.barrier === "kerb" || t.kerb) {
     if (t.kerb === "lowered" || t.kerb === "flush" || t.kerb === "no") return "kerb_lowered";
     if (t.kerb === "raised" || t.kerb === "regular" || t.kerb === "yes") return "kerb_raised";
@@ -49,8 +56,19 @@ export function classifyNode(t: Tags): AccessKind | null {
   return null;
 }
 
+/** A path explicitly tagged as a ramp, or with a non-flat incline. Untagged paths are NOT assumed flat. */
+export function isSloped(t: Tags): boolean {
+  if (t.ramp === "yes" || t["ramp:wheelchair"] === "yes") return true;
+  const i = (t.incline ?? "").trim().toLowerCase();
+  if (!i || i === "no") return false;
+  if (i === "up" || i === "down" || i === "yes") return true;
+  const n = parseFloat(i);
+  return Number.isFinite(n) && n !== 0;
+}
+
 export function classifyWay(t: Tags): AccessKind | null {
   if (t.highway === "steps") return "steps";
+  if ((t.highway === "footway" || t.highway === "path" || t.highway === "pedestrian") && isSloped(t)) return "ramp";
   if (t.highway === "pedestrian") return "pedestrian_area";
   if (t.highway === "footway" || t.highway === "path") {
     if (t.footway === "sidewalk") return "sidewalk";
@@ -72,11 +90,56 @@ function props(kind: AccessKind, osm_id: string, t: Tags): AccessProps {
     handrail: yn(t.handrail ?? (t["handrail:left"] === "yes" || t["handrail:right"] === "yes" ? "yes" : undefined)),
     ramp: yn(t["ramp:wheelchair"] ?? t.ramp),
     signals: t.crossing === "traffic_signals" || t["crossing:signals"] === "yes" ? "yes" : t["crossing:signals"] === "no" || t.crossing === "unmarked" ? "no" : "unknown",
+    incline: t.incline ?? null,
+    width_m: Number.isFinite(parseFloat(t.width ?? "")) ? parseFloat(t.width!) : null,
+    ramp_type: rampType(kind, t),
     name: t.name ?? null,
   };
 }
 
+function rampType(kind: AccessKind, t: Tags): AccessProps["ramp_type"] {
+  if (kind === "kerb_lowered") return "curb_ramp";
+  if (kind === "entrance") return yn(t["ramp:wheelchair"] ?? t.ramp) === "yes" ? "building_ramp" : "unknown";
+  if (kind === "steps") return yn(t["ramp:wheelchair"] ?? t.ramp) === "yes" ? "stair_ramp" : "unknown";
+  if (kind === "ramp") return "path_ramp";
+  return "unknown";
+}
+
 const r6 = (x: number) => Math.round(x * 1e6) / 1e6;
+
+/** Rough metres between two lon/lat points (fine at city scale). */
+function distM(a: [number, number], b: [number, number]): number {
+  const k = 111_320;
+  const dx = (a[0] - b[0]) * k * Math.cos((a[1] * Math.PI) / 180);
+  const dy = (a[1] - b[1]) * k;
+  return Math.hypot(dx, dy);
+}
+
+/**
+ * Add UNCONFIRMED ramp candidates (kind "ramp_candidate", method "inferred"):
+ *  1. Crossing nodes tagged tactile_paving=yes with no kerb node mapped within `radiusM`.
+ *     Tactile paving at a crossing usually sits on a curb ramp, but nothing confirms it.
+ *  2. Stairs tagged ramp=yes / ramp:wheelchair=yes: a ramp is said to run alongside;
+ *     we mark the stair midpoint because the ramp itself is not mapped.
+ * Candidates never replace mapped data and are labelled low confidence.
+ */
+export function inferRampCandidates(features: AccessFeature[], radiusM = 10): AccessFeature[] {
+  const kerbs = features.filter((f) => f.properties.kind.startsWith("kerb") && f.geometry.type === "Point").map((f) => f.geometry.coordinates as [number, number]);
+  const out: AccessFeature[] = [];
+  for (const f of features) {
+    const p = f.properties;
+    if (p.kind === "crossing" && p.tactile_paving === "yes" && f.geometry.type === "Point") {
+      const c = f.geometry.coordinates;
+      if (kerbs.some((k) => distM(k, c) <= radiusM)) continue;
+      out.push({ type: "Feature", geometry: f.geometry, properties: { ...p, kind: "ramp_candidate", ramp_type: "curb_ramp", reason: `Crossing has tactile paving but no curb is mapped within ${radiusM} m. A curb ramp is likely but unconfirmed.` } });
+    }
+    if (p.kind === "steps" && p.ramp === "yes" && f.geometry.type === "LineString") {
+      const g = f.geometry.coordinates;
+      out.push({ type: "Feature", geometry: { type: "Point", coordinates: g[Math.floor(g.length / 2)] }, properties: { ...p, kind: "ramp_candidate", ramp_type: "stair_ramp", reason: "These stairs are tagged as having a ramp, but the ramp itself is not mapped. Location is approximate." } });
+    }
+  }
+  return out;
+}
 
 export function overpassToAccess(json: { elements?: OsmEl[] }, bbox: number[], retrievedAt: string): AccessCollection {
   const features: AccessFeature[] = [];
@@ -93,6 +156,7 @@ export function overpassToAccess(json: { elements?: OsmEl[] }, bbox: number[], r
       features.push({ type: "Feature", geometry: { type: "LineString", coordinates: g.map((p) => [r6(p.lon), r6(p.lat)] as [number, number]) }, properties: props(k, `way/${el.id}`, t) });
     }
   }
+  features.push(...inferRampCandidates(features));
   return {
     type: "FeatureCollection",
     features,
@@ -109,5 +173,7 @@ node["barrier"="kerb"]${b};
 node["kerb"]${b};
 node["highway"="crossing"]${b};
 node["highway"="elevator"]${b};
+node["entrance"]["wheelchair"]${b};
+node["entrance"]["ramp"]${b};
 );out geom;`;
 }
