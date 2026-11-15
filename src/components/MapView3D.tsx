@@ -66,7 +66,8 @@ function tokens() {
     kerbRaised: v("--map-kerb-raised", "#b45309"),
     kerbUnknown: v("--map-kerb-unknown", "#64748b"),
     elevator: v("--map-elevator", "#6d28d9"),
-    route: v("--accent", "#1d4ed8"),
+    route: v("--map-route", "#151020"),
+    routeGlow: v("--map-route-glow", "#4fe3d6"),
     pinStart: v("--pin-start", "#15803d"),
     pinEnd: v("--pin-end", "#b91c1c"),
     halo: v("--panel", "#ffffff"),
@@ -412,7 +413,7 @@ export default function MapView3D(p: Props) {
 
         // Route + barriers above context.
         m.addSource("route", { type: "geojson", data: empty });
-        m.addLayer({ id: "route-casing", type: "line", source: "route", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": t.halo, "line-width": 10 } });
+        m.addLayer({ id: "route-casing", type: "line", source: "route", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": t.routeGlow, "line-width": 12, "line-blur": 1.5 } });
         m.addLayer({ id: "route-line", type: "line", source: "route", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": t.route, "line-width": 6 } });
 
         m.addSource("barriers", { type: "geojson", data: empty });

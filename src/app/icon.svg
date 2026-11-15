@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Beacon">
+  <defs>
+    <linearGradient id="beam" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#C8FFF9" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#4FE3D6" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#C8FFF9" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#4FE3D6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- beam -->
+  <polygon points="28.5,36 35.5,36 33.2,0 30.8,0" fill="url(#beam)"/>
+  <!-- glass cube body (back) -->
+  <polygon points="32,22 50,31 50,51 32,60 14,51 14,31" fill="#CFE3E6" fill-opacity="0.14"/>
+  <!-- obsidian base -->
+  <polygon points="17,44.5 32,52 32,57 17,49.5" fill="#2A2140"/>
+  <polygon points="32,52 47,44.5 47,49.5 32,57" fill="#151020"/>
+  <polygon points="32,52 47,44.5 32,37 17,44.5" fill="#3A2E55"/>
+  <!-- glow behind core -->
+  <circle cx="32" cy="38" r="13" fill="url(#glow)" opacity="0.55"/>
+  <!-- cyan core -->
+  <polygon points="32,41 41,36.5 32,32 23,36.5" fill="#C8FFF9"/>
+  <polygon points="23,36.5 32,41 32,52 23,47.5" fill="#4FE3D6"/>
+  <polygon points="32,41 41,36.5 41,47.5 32,52" fill="#1FA89E"/>
+  <!-- glass edges -->
+  <g fill="none" stroke="#E8F4F5" stroke-width="2" stroke-linejoin="round">
+    <polygon points="32,22 50,31 50,51 32,60 14,51 14,31"/>
+    <polyline points="14,31 32,40 50,31" stroke-opacity="0.85"/>
+    <line x1="32" y1="40" x2="32" y2="60" stroke-opacity="0.85"/>
+  </g>
+  <!-- glints -->
+  <path d="M18 35 l3 1.5 M18 39 l2 1" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round" opacity="0.8"/>
+</svg>

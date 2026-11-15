@@ -1,19 +1,19 @@
 :root {
-  --bg: #f8fafc;
+  --bg: #f4fafb;
   --fg: #0f172a;
   --muted: #475569;
   --panel: #ffffff;
-  --border: #cbd5e1;
+  --border: #cfe3e6;
   --focus: #f59e0b;
   --fixture: #fef3c7;
   --fixture-fg: #78350f;
   --fixture-accent: #d97706;
-  --link: #1d4ed8;
-  --surface-2: #f1f5f9;      /* subtle fill: caveats, pressed items */
-  --surface-3: #e2e8f0;      /* coverage banner */
+  --link: #0b7a74;
+  --surface-2: #eaf5f6;      /* subtle fill: caveats, pressed items */
+  --surface-3: #dcedef;      /* coverage banner */
   --strong: #334155;         /* caveat bar, glyph chips */
   --on-strong: #ffffff;
-  --accent: #1d4ed8;         /* primary action + route line */
+  --accent: #0b7a74;         /* primary action + route line (Beacon teal, 5.2:1 on white) */
   --on-accent: #ffffff;
   --error: #b91c1c;
   --pin-start: #15803d;
@@ -22,6 +22,8 @@
   --ai-fg: #4c1d95;
   /* Map palette (read by MapView3D at load) */
   /* Colorblind-safe overlays (Okabe-Ito hues, darkened for >=3:1 on the pastel base) */
+  --map-route: #151020;      /* route: obsidian core... */
+  --map-route-glow: #4fe3d6; /* ...with a beacon-cyan glow, distinct from sidewalk/crossing overlays */
   --map-building: #dfe3ea;
   --map-building-top: #c5ccd8;
   --map-b-low: #f6ead8;      /* pastel height ramp (decorative) */
@@ -43,6 +45,10 @@
   --map-kerb-raised: #b06d00;
   --map-kerb-unknown: #64748b;
   --map-elevator: #6d28d9;
+  --brand-bg: #151020;       /* Beacon header: obsidian */
+  --brand-fg: #e8f4f5;       /* 16.6:1 on brand-bg */
+  --brand-glow: #4fe3d6;     /* beacon cyan, 11.8:1 on brand-bg; decorative/brand only, never a status */
+  --brand-muted: #b7c4cc;
   --radius: 8px;
   --radius-sm: 6px;
   /* Theme hook: future themes override these tokens (e.g. [data-theme="dark"] { ... }); components use tokens only. */
@@ -62,9 +68,16 @@ a { color: var(--link); }
 /* Viewport-locked app: the side panel scrolls on its own, so the map never grows with list content.
    (A tall map would exceed MapLibre's 4096px canvas cap and render stretched/blurry.) */
 .app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
-.topbar { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); background: var(--panel); }
-.topbar h1 { margin: 0; font-size: 1.3rem; }
-.tagline { margin: 0.2rem 0 0; color: var(--muted); font-size: 0.9rem; }
+.topbar {
+  display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem;
+  background: var(--brand-bg); color: var(--brand-fg);
+  border-bottom: 2px solid var(--brand-glow);
+  box-shadow: 0 2px 14px rgba(79, 227, 214, 0.25);
+}
+.brand-logo { width: 44px; height: 44px; flex: none; filter: drop-shadow(0 0 6px rgba(79, 227, 214, 0.55)); }
+.topbar h1 { margin: 0; font-size: 1.4rem; letter-spacing: 0.04em; }
+.topbar h1 .brand-sub { color: var(--brand-glow); font-weight: 500; font-size: 0.85em; margin-left: 0.4rem; }
+.tagline { margin: 0.15rem 0 0; color: var(--brand-muted); font-size: 0.9rem; }
 
 .banner { margin: 0; padding: 0.5rem 1rem; font-size: 0.9rem; }
 .banner--fixture { background: var(--fixture); color: var(--fixture-fg); border-bottom: 2px solid var(--fixture-accent); }
@@ -127,11 +140,12 @@ input, select {
 input[aria-invalid="true"] { border-color: var(--error); }
 button:disabled { opacity: 0.55; cursor: not-allowed; }
 button[aria-pressed="true"] { border-color: var(--fg); border-width: 2px; }
-.btn-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.btn-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
+.btn-primary:hover:not(:disabled) { background: #086560; }
 .error { color: var(--error); }
 .route-result { margin-top: 0.75rem; border-top: 1px solid var(--border); padding-top: 0.5rem; }
 .route-result h4 { font-size: 0.9rem; margin: 0.6rem 0 0.3rem; }
-.route-line { stroke: var(--accent); }
+.route-line { stroke: var(--map-route); }
 .map--picking { cursor: crosshair; }
 .pin {
   display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;

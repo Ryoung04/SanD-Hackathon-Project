@@ -130,8 +130,12 @@ export default function Home() {
   return (
     <div className="app">
       <header className="topbar">
-        <h1>AccessPath SD</h1>
-        <p className="tagline">Potential sidewalk barriers from public records — not a guarantee of accessibility.</p>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/beacon.svg" alt="" className="brand-logo" />
+        <div>
+          <h1>Beacon<span className="brand-sub">San Diego</span></h1>
+          <p className="tagline">Potential sidewalk barriers from public records — not a guarantee of accessibility.</p>
+        </div>
       </header>
 
       {mode === "demo_fixture" && (
