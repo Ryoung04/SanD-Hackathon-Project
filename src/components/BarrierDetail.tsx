@@ -10,6 +10,8 @@ import {
   humanize,
   observedDateText,
 } from "@/lib/ui/caveats";
+import EvidenceActions from "./EvidenceActions";
+import { investigateTarget } from "@/lib/ui/evidenceClient";
 
 function safeHttpUrl(u: string | null): string | null {
   if (!u) return null;
@@ -44,7 +46,7 @@ export default function BarrierDetail({ obs, onClose }: { obs: BarrierObservatio
         <dt>Category</dt><dd>{humanize(obs.category)}</dd>
         <dt>Source</dt><dd><span className="glyph" aria-hidden="true">{SOURCE_GLYPHS[obs.source_kind]}</span> {SOURCE_LABELS[obs.source_kind]}</dd>
         <dt>Original record</dt>
-        <dd>{url ? <a href={url} target="_blank" rel="noopener noreferrer">Open source record (new tab)</a> : "Source link not available"}</dd>
+        <dd>{url ? <a href={url} target="_blank" rel="noopener noreferrer">Open source record (new tab)</a> : obs.source_url?.startsWith("upload:") ? "Participant upload (no public link)" : "Source link not available"}</dd>
         <dt>Observed</dt><dd>{observedDateText(obs.source_observed_at)}</dd>
         <dt>Source last updated</dt><dd>{dateOrUnknown(obs.source_updated_at)}</dd>
         <dt>Ingested</dt><dd>{dateOrUnknown(obs.ingested_at)}</dd>
@@ -59,6 +61,7 @@ export default function BarrierDetail({ obs, onClose }: { obs: BarrierObservatio
           <p className="desc">{obs.description}</p>
         </>
       )}
+      {!isFixture && <EvidenceActions target={investigateTarget(obs)} onScreenText={`${obs.label}. ${caveatFor(obs)}`} />}
     </section>
   );
 }

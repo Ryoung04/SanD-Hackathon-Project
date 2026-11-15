@@ -1,5 +1,29 @@
 # Progress
 
+## Owner B — Merge to main + new endpoint wiring (2026-11-14)
+- **Merged** Daniel into main. Conflicts: `OWNER_B_REQUESTS.md` and `PROGRESS.md` (kept both sides), `package-lock.json` (regenerated with `npm install`).
+- **Connected:** C's `POST /api/investigate` (the real `{barrier_id, lat, lon}` contract; shows summary, uncertainties, conflicts, cited links and the caveat) and `POST /api/speak` (600-char limit, friendly BUDGET/RATE_LIMITED messages), plus A's `GET /api/sources` ("Data sources" panel).
+- **Files:** `src/lib/ui/evidenceClient.ts`, `src/components/{EvidenceActions,SourcesPanel,BarrierDetail}.tsx`, `src/app/page.tsx`, `tests/ui/evidenceClient.test.ts`.
+- **Tests:** `npm run test:ui` 110 pass; `npm test` 238 pass; typecheck and build clean. Not yet checked in a browser with live keys.
+
+## Owner B — Ramp/slope detail + C access-feed contract (2026-11-14)
+- **Outcome:** the map gets a "Ramps" layer (R = mapped, hollow ? = unconfirmed candidate) and a "Slope (where known)" layer. Slope bands go from light (gentle) to dark (steep), with a "~6%" label when a value is not measured; solid lines = measured/official, dashed = estimate. The popup shows ramp type, slope, cross slope, width, surface, handrail, landing, source, date, method, status and confidence. The base map is now colorful (pastel), with a "Plain colors" toggle.
+- **More ramps:** OSM snapshot refreshed (4,271 features: 5 tagged ramp paths, 541 lowered curbs = curb ramps, and **161 inferred curb-ramp candidates**, i.e. crossings with tactile paving but no curb mapped within 10 m; labelled inferred/low confidence).
+- **Ready for C:** `GET /api/access-features` is optional (a 404 leaves OSM only). The contract and adapter config are in `src/lib/map/accessContract.ts`; the spec is under "To Owner C … access-detail endpoint" in `docs/OWNER_B_REQUESTS.md`; the sample is `docs/samples/access_features_v1.json`.
+- **Files:** `src/lib/map/{accessContract,accessClient,osmAccess}.ts`, `MapView3D.tsx`, `globals.css`, `public/data/downtown-access.geojson`, `tests/ui/accessContract.test.ts`.
+- **Tests:** `npm run test:ui` 107 pass; typecheck and build clean. Not yet checked visually in a browser.
+
+## Owner B — Downtown 3D map (2026-11-14)
+- **Outcome:** MapLibre GL map is now the default (Leaflet 2D kept at `?map=2d`). Flat by default; a "3D view" button tilts it, showing extruded buildings (OpenFreeMap/OSM `render_height`) and stairways drawn as rising step blocks (illustrative, not measured). Toggleable "Map details" layer: sidewalks, crosswalks, crossings (thicker ring = tactile paving), curb ramps (▼ lowered / ▲ raised / ? unknown, shape + color), stairs, elevators. Clicking a context feature shows its OSM tags (labelled community-mapped, unverified). The map is bounded to `STUDY_BBOX`; colors come from `--map-*` CSS tokens.
+- **Data:** `public/data/downtown-access.geojson`, an Overpass snapshot (4,110 features: 66 steps, 541 lowered kerbs, 1,373 crossings, 2 elevators; 1.4 MB, ~100 KB gzip). Refresh: `npx tsx scripts/osm/fetch-downtown.ts`.
+- **Files:** `src/components/MapView3D.tsx`, `src/lib/map/{osmAccess,extrude}.ts`, `scripts/osm/fetch-downtown.ts`, `page.tsx`, `layout.tsx`, `globals.css`, `tests/ui/{osmAccess,extrude}.test.ts`. New dependency: `maplibre-gl@4.7.1`.
+- **Tests:** `npm run test:ui` 96 pass; typecheck and build clean. Not yet checked visually in a browser.
+- **Not done:** no satellite imagery. Building footprints come from OSM, not from our own imagery analysis.
+
+## Owner B — Owner C UI shells (2026-11-14)
+- **Outcome:** Shells for C's features, all optional; failures never block the map or routing. Collapsible "Construction news" panel (GET /api/notices, loads on open, empty state, a "Show on map" button only when observation_id is set). "Report with a photo" form (POST /api/analyze-image: permission checkbox, 5 MB check, optional camera lat/lon; results labelled AI candidate, unverified; refetches barriers when saved). "Explain evidence" and "Read aloud" buttons on a record call /api/investigate and /api/speak and hide themselves on 404 (both 404 today). `upload:` sources render as "Participant upload (no public link)".
+- **Files:** `src/lib/ui/evidenceClient.ts`, `src/components/{NoticesPanel,PhotoReport,EvidenceActions}.tsx`, `BarrierDetail.tsx`, `page.tsx`, `globals.css`, `tests/ui/evidenceClient.test.ts`.
+- **Tests:** `npm run test:ui` 69 pass; `npm test` 196 pass; typecheck and build clean.
 ## Owner C — Vultr deploy (2026-11-14)
 - **Live:** https://140-82-17-18.sslip.io — full app on Vultr `vc2-1c-1gb` (lax), Caddy TLS, Neon data. Redeploy: `scripts/deploy/vultr-deploy.sh 140.82.17.18` (needs `~/.ssh/accesspath_vultr`, Aidan's machine). Server env = Gemini + ElevenLabs + DATABASE_URL only.
 - `/api/investigate` now retries once on malformed structured output (seen 1/6 live). `npm test` 233 pass + 1 todo.
