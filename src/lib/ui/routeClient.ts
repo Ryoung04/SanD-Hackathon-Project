@@ -16,7 +16,7 @@ export type RouteResult =
       /** Provider turn-by-turn text (may be empty for older servers). */
       steps?: RouteStep[];
       /** Standard walking route for the same trip, only when the provider returned both. */
-      comparison?: { profile: "pedestrian"; distance_m: number; duration_s: number } | null;
+      comparison?: { profile: "pedestrian"; distance_m: number; duration_s: number; stairs?: number | null } | null;
       /** Graph router only: what the route passes through. */
       route_features?: { stairs: number; passages: number; open_areas: number; corridors: number; road_no_sidewalk_m: number; road_with_sidewalk_m?: number } | null;
       /** "roads_last_resort": no route exists on sidewalks/paths alone, so streets were used minimally. */

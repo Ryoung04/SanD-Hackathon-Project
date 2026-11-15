@@ -19,6 +19,13 @@ export const SAMPLE_TRIP = {
   start: { lat: 32.717246, lon: -117.169838 },
   end: { lat: 32.715101, lon: -117.161538 },
 };
+/** Stair-avoidance demo: standard walking takes 3 mapped stairways (OSM), wheelchair route detours ~200 m without them. */
+export const STAIRS_TRIP = {
+  label: "Waterfront Park → US Federal Courthouse (avoids stairs)",
+  start: { lat: 32.722223, lon: -117.172041 },
+  end: { lat: 32.715073, lon: -117.166081 },
+};
+export type SampleTrip = typeof SAMPLE_TRIP;
 
 const PROFILE_TEXT: Record<RouteProfile, string> = {
   wheelchair_preference: "Prefer wheelchair-friendly paths",
@@ -37,8 +44,8 @@ interface Props {
   loading: boolean;
   onSubmit: (profile: RouteProfile) => void;
   onClear: () => void;
-  /** Fill in SAMPLE_TRIP and route it with the chosen profile. */
-  onSample: (profile: RouteProfile) => void;
+  /** Fill in a preset trip and route it with the chosen profile. */
+  onSample: (profile: RouteProfile, trip: SampleTrip) => void;
   observations: BarrierObservation[];
   onSelect: (id: string) => void;
   /** OSM/feed context near the route (null = still loading or unavailable). */
@@ -76,8 +83,11 @@ export default function RoutePlanner(p: Props) {
           </button>
           <button type="button" onClick={p.onClear}>Clear</button>
         </div>
-        <button type="button" className="link-button small" onClick={() => p.onSample(profile)} disabled={p.loading}>
+        <button type="button" className="link-button small" onClick={() => p.onSample(profile, SAMPLE_TRIP)} disabled={p.loading}>
           Try a sample trip: {SAMPLE_TRIP.label}
+        </button>
+        <button type="button" className="link-button small" onClick={() => p.onSample(profile, STAIRS_TRIP)} disabled={p.loading}>
+          Try a sample trip: {STAIRS_TRIP.label}
         </button>
       </form>
 
@@ -161,6 +171,9 @@ function RouteResultView({ result, observations, onSelect, context, contextError
           Standard walking route for the same trip: {formatDistance(cmp.distance_m)}, about {formatDuration(cmp.duration_s)}.
           {" "}This route is {signed(result.distance_m - cmp.distance_m, formatDistance)}
           {result.distance_m !== cmp.distance_m ? ` (${signed(result.duration_s - cmp.duration_s, formatDuration)})` : ""}.
+          {cmp.stairs && result.route_features?.stairs === 0 ? (
+            <>{" "}<strong>The standard walking route takes {cmp.stairs} mapped stairway{cmp.stairs > 1 ? "s" : ""}; this route avoids {cmp.stairs > 1 ? "them" : "it"}.</strong></>
+          ) : null}
           {" "}<span className="muted">Both are real provider routes; the difference is not a safety score.</span>
         </p>
       )}

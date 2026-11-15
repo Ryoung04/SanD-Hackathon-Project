@@ -7,7 +7,7 @@ import { clearBarrierCache, debounce, filterBySource, loadBarriers } from "@/lib
 import BarrierDetail from "@/components/BarrierDetail";
 import ObservationList from "@/components/ObservationList";
 import SourceLegend, { ALL_SOURCES } from "@/components/SourceLegend";
-import RoutePlanner, { SAMPLE_TRIP, type PickTarget } from "@/components/RoutePlanner";
+import RoutePlanner, { type PickTarget, type SampleTrip } from "@/components/RoutePlanner";
 import { loadAccessData } from "@/lib/map/accessStore";
 import { routeContext, type ContextGroup } from "@/lib/map/routeContext";
 import NoticesPanel from "@/components/NoticesPanel";
@@ -60,9 +60,9 @@ export default function Home() {
   };
   // After a saved photo report, drop cached tiles and refetch the current view.
   const refreshBarriers = () => { clearBarrierCache(); if (lastBBox.current) fetchBBox(lastBBox.current); };
-  const runSample = (profile: RouteProfile) => {
-    setStart(SAMPLE_TRIP.start); setEnd(SAMPLE_TRIP.end); setPicking(null);
-    submitRoute(profile, SAMPLE_TRIP.start, SAMPLE_TRIP.end);
+  const runSample = (profile: RouteProfile, trip: SampleTrip) => {
+    setStart(trip.start); setEnd(trip.end); setPicking(null);
+    submitRoute(profile, trip.start, trip.end);
   };
 
   // Map context (stairs, curbs, slopes...) near the current route, from the shared access store.

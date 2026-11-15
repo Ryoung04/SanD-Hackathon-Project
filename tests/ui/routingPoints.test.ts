@@ -90,3 +90,14 @@ test("real map: across 100 fixed random trips, under 10% of walking distance is 
   t.diagnostic(`road share ${pct.toFixed(1)}% of ${total} m (remaining use is mostly streets whose sidewalks aren't mapped in OSM)`);
   soft(t, pct < 10, `road share ${pct.toFixed(1)}%`);
 });
+
+test("real map: stairs demo trip Waterfront Park -> US Federal Courthouse: walking takes stairs, wheelchair avoids them", { skip: !HAVE_GRAPH && "no graph file" }, (t) => {
+  const g = loadGraph()!;
+  const a = { lat: 32.722223, lon: -117.172041 }, b = { lat: 32.715073, lon: -117.166081 };
+  const walk = routeOnGraph(g, a, b, "pedestrian");
+  soft(t, walk.ok && walk.route_features.stairs >= 1, `walking no longer uses stairs: ${JSON.stringify(walk.ok && walk.route_features)}`);
+  for (const profile of ["wheelchair_preference", "avoid_stairs"] as RouteProfile[]) {
+    const r = routeOnGraph(g, a, b, profile);
+    soft(t, r.ok && r.route_features.stairs === 0, `${profile}: ${r.ok ? `${r.route_features.stairs} stairways` : r.reason}`);
+  }
+});

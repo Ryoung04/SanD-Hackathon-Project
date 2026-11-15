@@ -59,7 +59,7 @@ export async function POST(req: Request) {
     fallback_reason: r.fallback_reason,
     data_note: r.provider === "accesspath-osm-graph" ? GRAPH_NOTE : null,
     // Only compare like with like (same provider), so the difference is meaningful.
-    comparison: base && base.ok && base.provider === r.provider ? { profile: "pedestrian", distance_m: base.distance_m, duration_s: base.duration_s } : null,
+    comparison: base && base.ok && base.provider === r.provider ? { profile: "pedestrian", distance_m: base.distance_m, duration_s: base.duration_s, stairs: base.route_features?.stairs ?? null } : null,
     nearby_barriers: nearby.map((n) => n.id),
     nearby_details: nearby,
     nearby_status,
