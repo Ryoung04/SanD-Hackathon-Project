@@ -27,10 +27,12 @@ export default function EvidenceActions({ target, onScreenText }: Props) {
   const [speakMsg, setSpeakMsg] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
   const audioUrl = useRef<string | null>(null);
+  // Kept in the DOM: some Chrome setups abort play() on a detached `new Audio()`.
   const audio = useRef<HTMLAudioElement | null>(null);
 
   const stopAudio = () => {
-    if (audio.current) { audio.current.pause(); audio.current.currentTime = 0; audio.current = null; }
+    const a = audio.current;
+    if (a && !a.paused) { a.pause(); a.currentTime = 0; }
     setPlaying(false);
   };
 
@@ -56,11 +58,16 @@ export default function EvidenceActions({ target, onScreenText }: Props) {
     if (r.ok) {
       if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
       audioUrl.current = URL.createObjectURL(r.audio);
-      const a = new Audio(audioUrl.current);
-      audio.current = a;
-      a.onended = () => { if (audio.current === a) stopAudio(); };
-      setPlaying(true);
-      a.play().catch(() => { if (audio.current === a) stopAudio(); setSpeakMsg("Audio could not be played."); });
+      const a = audio.current;
+      if (a) {
+        a.src = audioUrl.current;
+        setPlaying(true);
+        a.play().catch((e: unknown) => {
+          setPlaying(false);
+          // AbortError just means Stop (or a new clip) interrupted it.
+          if (!(e instanceof DOMException && e.name === "AbortError")) setSpeakMsg("Audio could not be played.");
+        });
+      }
     } else {
       if (r.code === "NOT_DEPLOYED") { notDeployed.speak = true; force((n) => n + 1); }
       setSpeakMsg(r.message);
@@ -72,6 +79,7 @@ export default function EvidenceActions({ target, onScreenText }: Props) {
   const canExplain = !notDeployed.investigate && target !== null;
   return (
     <div className="evidence-actions">
+      <audio ref={audio} hidden preload="none" onEnded={() => setPlaying(false)} />
       <div className="row">
         {canExplain && (
           <button type="button" onClick={onExplain} disabled={busy !== null}>{busy === "investigate" ? "Explaining…" : "Explain evidence"}</button>
