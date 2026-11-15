@@ -64,6 +64,7 @@ button {
   border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--panel); color: var(--fg);
 }
 a { color: var(--link); }
+.side a { overflow-wrap: anywhere; } /* long source URLs must wrap, not push the sidebar sideways */
 
 /* Viewport-locked app: the side panel scrolls on its own, so the map never grows with list content.
    (A tall map would exceed MapLibre's 4096px canvas cap and render stretched/blurry.) */

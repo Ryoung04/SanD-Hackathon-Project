@@ -212,5 +212,12 @@ export function searchPlaces(places: Place[], query: string, limit = 8): Place[]
     if (rank >= 0) hits.push({ p, rank });
   }
   hits.sort((a, b) => a.rank - b.rank || a.p.name.length - b.p.name.length || a.p.name.localeCompare(b.p.name));
-  return hits.slice(0, limit).map((h) => h.p);
+  // Same name + kind within ~200 m (e.g. three "Santa Fe Depot" transit stops) shows once.
+  const kept: Place[] = [];
+  for (const { p } of hits) {
+    if (kept.some((k) => k.name === p.name && k.kind === p.kind && Math.abs(k.lat - p.lat) < 0.002 && Math.abs(k.lon - p.lon) < 0.002)) continue;
+    kept.push(p);
+    if (kept.length >= limit) break;
+  }
+  return kept;
 }

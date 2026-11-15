@@ -80,7 +80,7 @@ export default function PlaceSearch({ id, label, onSelect }: Props) {
           aria-controls={listId}
           aria-activedescendant={showList && active >= 0 ? `${id}-opt-${active}` : undefined}
           value={query}
-          placeholder="e.g. Petco Park or 5th & Market"
+          placeholder="e.g. Horton Plaza Park or 5th & Broadway"
           onFocus={() => { void load(); setOpen(true); }}
           onChange={(e) => { setQuery(e.target.value); setOpen(true); setActive(-1); }}
           onBlur={() => { setOpen(false); setActive(-1); }}
