@@ -43,7 +43,7 @@ export default function EvidenceActions({ target, onScreenText }: Props) {
     setBusy("speak");
     setSpeakMsg(null);
     // Once the AI summary is on screen, read that (with its caveat); otherwise the record text.
-    const text = explain?.ok ? `${explain.summary} ${explain.note ?? "AI summary, unverified."}` : onScreenText;
+    const text = explain?.ok ? `${explain.summary} ${explain.note ?? "Summary of public records, unverified."}` : onScreenText;
     const r = await speak(text);
     if (r.ok) {
       if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
@@ -71,7 +71,7 @@ export default function EvidenceActions({ target, onScreenText }: Props) {
       <div aria-live="polite">
         {explain?.ok && (
           <div className="caveat small investigation">
-            <p><strong>AI summary (unverified):</strong> {explain.summary}</p>
+            <p><strong>Evidence summary (unverified):</strong> {explain.summary}</p>
             {explain.note && <p className="muted">{explain.note}</p>}
             {explain.uncertainties.length > 0 && (
               <>
