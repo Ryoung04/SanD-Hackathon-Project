@@ -35,6 +35,10 @@
 - `npm run ai:photo-prep`: up to 4 facing photos per intersection (distinct capture sequences/approach quadrants) + 1 panorama → 154 photos; panoramas re-fetched at 2048 px and split into 4 street-level tiles (128 tiles, `scripts/ai/merge-pano-tiles.js`).
 - 5 Claude Haiku subagents (~60–110k tokens each). Result: **20 of 38 intersections have ≥1 photo showing a curb ramp** (was 1 of 70), 18 inconclusive, 11 sidewalk-obstruction candidates (mostly construction fencing). Negative "no ramp" verdicts were spot-checked, found unreliable (1 of 2 wrong), and downgraded to inconclusive: photos confirm presence only. Files: `docs/samples/photo_review_v2/`.
 
+### Round 3 — remaining intersections
+- 50 more intersections (215 photos: 170 regular + 45 panoramas pre-tiled into 180 tiles), 6 Claude Haiku subagents (~61–80k tokens each). 29 of 47 with photos show a ramp. 3 reviewer "can't tell" calls upgraded after coordinator spot-check (clear yellow pads; marked in TSV notes). Files: `docs/samples/photo_review_v3/`.
+- **Totals: 85 city ramp-deficit intersections reviewed from 369 photos; 49 have ≥1 photo showing a curb ramp.** Served to B's Ramps layer via `GET /api/access-features` (ai_candidate, low/medium confidence, photo links).
+
 ## Vultr — hosts the full web app
 - Instance `accesspath-sd-demo`: `vc2-1c-1gb` (1 vCPU / 1 GB, $5/mo), region `lax`, Ubuntu 24.04, created 2026-11-14 via Vultr API. Backups off, ufw 22/80/443 only.
 - Runs: the whole Next.js app (map UI + `/api/barriers`, `/api/route`, `/api/notices`, `/api/investigate`, `/api/speak`) as systemd service under a non-root user, behind Caddy with Let's Encrypt TLS.

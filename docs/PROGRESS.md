@@ -1,5 +1,9 @@
 # Progress
 
+## Owner C — /api/access-features + all intersections reviewed (2026-11-14 late)
+- `GET /api/access-features?bbox=` (B's contract in `src/lib/map/accessContract.ts`): photo-confirmed curb ramps as `ai_candidate` points; slope/width unknown. Built by a Sonnet subagent, reviewed.
+- Photo review now covers 85 of 88 ramp-deficit intersections (369 photos): 49 with a ramp seen. Endpoint returns 49 features.
+
 ## Owner C — multi-photo intersection review (2026-11-14 night)
 - 40 demo intersections (32 downtown core + 8 Golden Hill): 154 Mapillary photos incl. 32 panoramas (tiled). Blind Claude-Haiku subagent review. 20/38 intersections now have photo evidence of ≥1 ramp; negatives not trusted. 11 obstruction ai_candidates. Quick brief reports "Of N photos, K show a curb ramp" + flags conflicts when photos show more ramps than the city lists.
 - Repro: `npm run ai:photo-prep -- <dir>` → reviewers → `node scripts/ai/merge-pano-tiles.js <dir>` → `npm run ai:import-review -- <dir>/manifest.json <tsvs> --save`.

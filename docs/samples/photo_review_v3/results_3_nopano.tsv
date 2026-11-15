@@ -1,0 +1,43 @@
+q108	cant_tell	0	0	clear	-	street with red truck; no crosswalk corner visible
+q109	cant_tell	0	0	clear	-	building facade and parked cars; no crosswalk visible
+q111	cant_tell	0	0	clear	-	parked trucks at curb; no crosswalk corner visible
+q112	cant_tell	0	0	clear	-	SUV in road; crosswalk lines at lower right; ramp unclear
+q113	cant_tell	0	0	clear	-	crosswalk ahead; yellow curb paint at right corner, no clear pad
+q114	cant_tell	0	0	clear	-	corner sidewalk with red curb; no crosswalk visible
+q116	cant_tell	0	0	clear	-	parking entrance and sidewalk with red curb; no crosswalk
+q117	cant_tell	0	0	clear	-	brick building sidewalk; yellow curb section; no crosswalk visible
+q118	cant_tell	0	0	cant_tell	-	close-up of parked gray Jeep; sidewalk not visible
+q119	cant_tell	0	0	clear	-	sidewalk with red curb along boarded building; no crosswalk
+q121	cant_tell	0	0	clear	-	building corner with hydrant; white lines; ramp not clear
+q122	cant_tell	0	0	obstructed	utility cabinet on sidewalk	green utility cabinet on sidewalk; no crosswalk visible
+q123	cant_tell	0	0	clear	-	garage sidewalk; green utility box against wall; no crosswalk
+q124	cant_tell	0	0	clear	-	night street with traffic; no crosswalk or ramp clear
+q126	cant_tell	0	0	clear	-	corner with utility pole and white lines; ramp unclear
+q127	cant_tell	0	0	clear	-	building sidewalk with red curb and sign post; no crosswalk
+q129	visible	1	0	clear	-	yellow rectangular pad at sidewalk corner by crosswalk
+q130	cant_tell	0	0	clear	-	parked Tesla at curb; building apron; no crosswalk corner
+q131	cant_tell	0	0	clear	-	residential driveway and parked car; no crosswalk visible
+q132	cant_tell	0	0	cant_tell	-	concrete pipes by roadside; sidewalk and crosswalk not clear
+q134	cant_tell	0	0	clear	-	parked white car; wall and garden at street; no crosswalk
+q135	cant_tell	0	0	clear	-	street signs at corner; no crosswalk or ramp visible
+q136	cant_tell	0	0	clear	-	curving sidewalk past white building; no crosswalk visible
+q137	cant_tell	0	0	clear	-	brick gate pillars; sidewalk; utility pole at curb edge
+q139	cant_tell	0	0	clear	-	vehicles at curb; utility pole at corner; no crosswalk
+q140	cant_tell	0	0	clear	-	white SUV parked at curb; garage doors; no crosswalk
+q141	cant_tell	0	0	clear	-	silver car in driveway; retaining wall; no crosswalk
+q142	cant_tell	0	0	cant_tell	-	retaining wall and fence; no sidewalk or crosswalk visible
+q144	cant_tell	0	0	clear	-	corner with yellow bollard; crosswalk far right; ramp unclear
+q145	cant_tell	0	0	cant_tell	-	parked blue truck and Jeep at curb; ramp not visible
+q147	cant_tell	0	0	clear	-	parked black truck; no crosswalk or ramp visible
+q148	cant_tell	0	0	clear	-	white sedan at curb; sidewalk with lamp post; no crosswalk
+q149	cant_tell	0	0	clear	-	parked van and sedan at curb; no crosswalk visible
+q150	cant_tell	0	0	clear	-	red car parked at curb; blue bins; no crosswalk visible
+q152	cant_tell	0	0	cant_tell	-	construction fence and barriers; sidewalk status unclear
+q153	cant_tell	0	0	clear	-	concrete retaining wall; red-curb sidewalk; no crosswalk
+q154	cant_tell	0	0	clear	-	concrete wall and red curb; no crosswalk visible
+q155	cant_tell	0	0	clear	-	corner pole and red item on sidewalk; no crosswalk visible
+q157	cant_tell	0	0	clear	-	guardrail along sidewalk; houses; no crosswalk visible
+q158	cant_tell	0	0	clear	-	parked SUV; white wall; corner sidewalk; no crosswalk
+q159	cant_tell	0	0	clear	-	concrete wall with parked cars above; no crosswalk
+q160	cant_tell	0	0	clear	-	blue bins at sidewalk edge; no crosswalk visible
+q162	cant_tell	0	0	cant_tell	-	freeway with barrier wall; no sidewalk or crosswalk

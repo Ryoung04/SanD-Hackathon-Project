@@ -1,0 +1,45 @@
+q005	visible	1	0	clear	-	yellow pad at left curb by crosswalk
+q010	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q015	visible	1	0	clear	-	yellow pad at left corner
+q020	visible	1	0	clear	-	yellow pad at sidewalk corner
+q025	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q030	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q035	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q040	visible	1	0	clear	-	yellow detectable pad at curb corner
+q044	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q049	visible	1	0	clear	-	yellow pad at curb corner
+q054	visible	1	0	clear	-	yellow pad at curb edge
+q059	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q065	visible	1	0	clear	-	yellow pad at left corner
+q067	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q071	visible	1	0	clear	-	yellow pad at left corner
+q076	visible	1	0	clear	-	yellow pad at right corner by crosswalk
+q081	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q086	visible	1	0	clear	-	yellow pad at curb corner
+q091	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q096	visible	1	0	clear	-	yellow pad at curb corner
+q105	visible	1	0	clear	-	yellow pad at curb corner
+q110	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q115	visible	1	0	clear	-	yellow pad at curb ramp, center right
+q120	visible	1	0	clear	-	textured yellow pad at curb corner
+q125	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q128	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q133	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q138	cant_tell	0	0	obstructed	A-frame barricades	panorama tiles inconclusive
+q143	visible	1	0	clear	-	yellow pad at lower-left sidewalk corner
+q146	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q151	visible	1	0	clear	-	yellow pad lower-left, bins at sidewalk edge
+q156	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q161	visible	1	0	clear	-	small yellow pad at far-left corner
+q166	visible	1	0	clear	-	tan pad at curb corner, likely warning pad
+q169	visible	1	0	clear	-	yellow pad at corner by pole
+q174	visible	1	0	clear	-	yellow pad at corner, bins nearby
+q179	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q183	visible	1	0	clear	-	yellow pad at curb corner
+q188	visible	1	0	clear	-	yellow pad right corner, bins on sidewalk
+q190	visible	1	0	clear	-	yellow pad at corner by crosswalk
+q195	visible	1	0	clear	-	yellow pad at right corner
+q200	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q205	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q210	visible	1	0	clear	-	textured yellow pad at curb
+q215	visible	3	0	clear	-	yellow pad at corner; yellow pad lower-right corner; yellow pad lower-left corner
