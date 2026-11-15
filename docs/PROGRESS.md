@@ -21,6 +21,26 @@
 - **Result:** 5.9% of route distance is on roads, mostly streets whose sidewalks aren't mapped in OSM (43–61% coverage on 9th Ave, C St, Kettner, State, India).
 - **Tests:** 4 regression unit tests in `tests/ui/graphRouter.test.ts` and 2 soft real-map checks in `tests/ui/routingPoints.test.ts`. `npm run test:ui` 152 pass; build clean.
 
+## Owner C — /api/access-features + all intersections reviewed (2026-11-14 late)
+- `GET /api/access-features?bbox=` (B's contract in `src/lib/map/accessContract.ts`): photo-confirmed curb ramps as `ai_candidate` points; slope/width unknown. Built by a Sonnet subagent, reviewed.
+- Photo review now covers 85 of 88 ramp-deficit intersections (369 photos): 49 with a ramp seen. Endpoint returns 49 features.
+
+## Owner C — multi-photo intersection review (2026-11-14 night)
+- 40 demo intersections (32 downtown core + 8 Golden Hill): 154 Mapillary photos incl. 32 panoramas (tiled). Blind Claude-Haiku subagent review. 20/38 intersections now have photo evidence of ≥1 ramp; negatives not trusted. 11 obstruction ai_candidates. Quick brief reports "Of N photos, K show a curb ramp" + flags conflicts when photos show more ramps than the city lists.
+- Repro: `npm run ai:photo-prep -- <dir>` → reviewers → `node scripts/ai/merge-pano-tiles.js <dir>` → `npm run ai:import-review -- <dir>/manifest.json <tsvs> --save`.
+
+## Owner C — reliable briefs + imagery review (2026-11-14 evening)
+- Gemini free tier can't sustain runtime agent calls (3.5-flash quota exhausted; flash-lite hangs → 45 s timeouts). Fix: `/api/investigate` defaults to an instant rule-based brief (`src/lib/agents/quickBrief.ts`, 0.1–0.4 s live); Mastra agent is opt-in `mode:"agent"` (step limit 10, aborted→TIMEOUT, long text trimmed).
+- Imagery: `src/lib/ai/{mapillary,imageryChecks,imageryPipeline}.ts`, `npm run ai:imagery`, `npm run ai:import-review`. Mapillary photos for 88 ramp intersections; Gemini pass was noisy → quality gate (`candidateGate`) → replaced by blind Claude-Haiku subagent review (70 photos): 1 ramp visible, 69 can't tell, 3 obstructions. Neon: 3 current street_imagery_ai, 68 marked outdated.
+- Tests: `npm test` 271 pass + 1 todo; `test:ui` 44.
+
+## Owner C (on A's files, team-approved) — wider study area + Missing APS (2026-11-14)
+- `STUDY_BBOX` → [-117.175, 32.705, -117.135, 32.735] (adds East Village, Golden Hill, Barrio Logan edge). Map bounds/route planner follow it automatically.
+- New: PROWAG layer 1 "Missing APS" → `city_gis:prowag1:<oid>`, `crossing_issue`, `routing_impact: informational`. Fetched inside the prowag step because `markOutdated` is per source_kind.
+- `ingest`/`ingest:safe`/`coverage` now also read `.env` (env vars still win, so ingest:safe keeps its branch URL — verified).
+- Live ingest to Neon: city_gis 165 (88 ramp + 77 APS), traffic_control 119 active, city_311 1194 (of 10,293 rows in bbox), 0 rejected. Total 1479 current. Golden Hill notice now has 21 records within 200 m.
+- Tests: `npm test` 241 pass + 1 todo (`tests/data/prowagAps.test.ts`), `test:ui` 44.
+
 ## Owner B — AccessPath graph router + elevation slopes (2026-11-14)
 - **Router:** `POST /api/route` now routes on our own OSM walking graph first, with Valhalla as the fallback.
   - The graph is `data/derived/downtown-graph.json` (19,307 nodes, 30,224 edges): 153 stairways, 79 building passages, 63 indoor corridors, 6,306 straight links across open plazas.

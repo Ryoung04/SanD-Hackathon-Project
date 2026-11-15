@@ -1,0 +1,33 @@
+q082	cant_tell	0	0	clear	-	dashcam; crosswalk ahead; corner ramps not discernible
+q083	cant_tell	0	0	clear	-	low-res dashcam; corner ramps not discernible
+q084	cant_tell	0	0	obstructed	construction fence	fence and gray barrier on sidewalk at left
+q085	cant_tell	0	0	cant_tell	-	intersection; ramps not discernible; fenced corner at right
+q087	cant_tell	0	0	cant_tell	-	no corner in view; chain-link fence beside lot at left
+q088	cant_tell	0	0	clear	-	sidewalk along building; no crosswalk in view
+q089	cant_tell	0	0	clear	-	crosswalk ahead with green bike boxes; corner ramps unclear
+q090	cant_tell	0	0	clear	-	sidewalk and dirt area; no crosswalk corner in view
+q092	cant_tell	0	0	cant_tell	-	sky-facing view; no crosswalk visible
+q093	cant_tell	0	0	clear	-	parked cars along street; no crosswalk visible
+q094	cant_tell	0	0	cant_tell	-	same frame as q092; no crosswalk visible
+q095	cant_tell	0	0	cant_tell	-	parked vehicles at building; no corners in view
+q097	cant_tell	0	0	clear	-	stop-sign corner; possible yellow pad too small to confirm
+q098	cant_tell	0	0	clear	-	crosswalk ahead; yellow marks at corner unclear
+q099	visible	1	0	clear	-	yellow pad at right corner by crosswalk
+q100	cant_tell	0	0	clear	-	street with parked cars; no crosswalk corners in view
+q102	cant_tell	0	0	clear	-	corner with light pole at curb edge; no crosswalk
+q103	cant_tell	0	0	clear	-	sidewalk along building; no crosswalk in view
+q105	cant_tell	0	0	clear	-	sidewalk corner; A-board sign and bins; no crosswalk
+q106	cant_tell	0	0	clear	-	parked cars at curb; no crosswalk corner in view
+q107	visible	1	0	clear	-	corner with yellow pad; hydrant at curb edge
+q108	cant_tell	0	0	cant_tell	-	freeway barrier view; no sidewalk corners visible
+q109	cant_tell	0	0	cant_tell	-	parking lot with parked cars; no corners in view
+q110	cant_tell	0	0	clear	-	metal fence beside path; no crosswalk corner
+q111	cant_tell	0	0	clear	-	sidewalk corner with drain grate; no crosswalk visible
+q112	cant_tell	0	0	cant_tell	-	windshield glare; green construction fence beyond street
+q113	cant_tell	0	0	cant_tell	-	equipment yard behind fence; no sidewalk corner visible
+q115	cant_tell	0	0	clear	-	street view; no crosswalk corners in view
+q116	cant_tell	0	0	cant_tell	-	dusk street view; no crosswalk or corners visible
+q117	cant_tell	0	0	clear	-	street view; no crosswalk corners in view
+q118	cant_tell	0	0	clear	-	street view; orange cones at far left curb
+q119	cant_tell	0	0	clear	-	sidewalk beside wall; no crosswalk corner
+q120	cant_tell	0	0	clear	-	fence along lot edge; no crosswalk or corner

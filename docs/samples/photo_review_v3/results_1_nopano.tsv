@@ -1,0 +1,43 @@
+q001	cant_tell	0	0	clear	-	Sidewalk along guardrail; car at left; no crosswalk or ramp visible.
+q002	cant_tell	0	0	cant_tell	-	Parking-structure lanes with car; no curb ramp clearly visible.
+q003	cant_tell	0	0	clear	-	Crosswalk stripes at left; corner ramp not confirmed.
+q004	cant_tell	0	0	clear	-	Road corner beside tall building; no crosswalk or ramp visible.
+q006	cant_tell	0	0	cant_tell	-	Grassy embankment above road; no sidewalk or crosswalk visible.
+q007	cant_tell	0	0	clear	-	Signalized intersection; corner ramps not clearly visible.
+q008	cant_tell	0	0	cant_tell	-	Grass embankment and road sign; no sidewalk or crosswalk.
+q009	cant_tell	0	0	clear	-	Wall beside road; parked cars at curb; no crosswalk.
+q011	cant_tell	0	0	cant_tell	-	Residential street with parked cars; no crosswalk or ramp.
+q012	cant_tell	0	0	cant_tell	-	Truck in parking lot at building; no crosswalk or ramp.
+q013	cant_tell	0	0	cant_tell	-	Parked cars and dark fence at house frontage; sidewalk edge unclear.
+q014	cant_tell	0	0	clear	-	Parked cars at residential curb; no crosswalk or ramp visible.
+q016	cant_tell	0	0	clear	-	Sidewalk with people and belongings (not flagged); no ramp visible.
+q017	cant_tell	0	0	clear	-	Tent at curb edge (not flagged); no crosswalk ramp visible.
+q018	cant_tell	0	0	clear	-	Corner with yellowish pad at curb; ramp not confirmed.
+q019	cant_tell	0	0	clear	-	Corner with yellowish pad at curb; ramp not confirmed.
+q021	cant_tell	0	0	clear	-	Signal-pole corner; yellow pad at right; crosswalk unclear.
+q022	cant_tell	0	0	cant_tell	-	Wide intersection with Wrong Way sign; no ramp visible.
+q023	cant_tell	0	0	clear	-	Glass building corner with signal; ramps not visible.
+q024	cant_tell	0	0	cant_tell	-	Wide intersection; red fencing far left; ramps not visible.
+q026	cant_tell	0	0	clear	-	Signalized intersection at building; corner ramps not clearly visible.
+q027	cant_tell	0	0	cant_tell	-	Parked cars beside red fence; sidewalk edge unclear.
+q028	cant_tell	0	0	clear	-	Parked cars at building frontage; planter; no ramp visible.
+q029	cant_tell	0	0	cant_tell	-	Rail-track intersection with crosswalk stripes; ramps not visible.
+q031	cant_tell	0	0	clear	-	Residential corner with gate and palms; no crosswalk visible.
+q032	cant_tell	0	0	clear	-	Corner with parked cars and street pole; no ramp clear.
+q033	cant_tell	0	0	cant_tell	-	Freeway-edge guardrail and road; no crosswalk visible.
+q034	cant_tell	0	0	cant_tell	-	Covered car at curb edge; sidewalk position unclear.
+q036	cant_tell	0	0	cant_tell	-	Dim road edge at dusk; no crosswalk or ramp visible.
+q037	cant_tell	0	0	cant_tell	-	Night highway with traffic; no sidewalk or crosswalk visible.
+q038	cant_tell	0	0	cant_tell	-	Freeway exit beside concrete wall; no crosswalk or ramp.
+q039	cant_tell	0	0	cant_tell	-	Road with guardrail and signs; no crosswalk or ramp visible.
+q041	cant_tell	0	0	cant_tell	-	SUV and truck near building entrance; sidewalk position unclear.
+q042	cant_tell	0	0	clear	-	Parked cars at curb in front of building; no ramp visible.
+q043	cant_tell	0	0	cant_tell	-	Parked cars along mural wall beside tracks; no ramp visible.
+q045	cant_tell	0	0	cant_tell	-	Guardrail along raised edge; no crosswalk or ramp visible.
+q046	cant_tell	0	0	cant_tell	-	Wrong Way and Do Not Enter signs; no crosswalk or ramp visible.
+q047	cant_tell	0	0	clear	-	Sidewalk beside wood fence; no crosswalk or ramp visible.
+q048	cant_tell	0	0	clear	-	Residential sidewalk and lawn; no crosswalk or ramp visible.
+q050	cant_tell	0	0	clear	-	Parked car at curb; house frontage; no crosswalk visible.
+q051	cant_tell	0	0	cant_tell	-	Parked cars on residential street; no crosswalk or ramp.
+q052	cant_tell	0	0	cant_tell	-	Arterial with speed sign and lane arrow; no crosswalk visible.
+q053	cant_tell	0	0	cant_tell	-	Park-like lot with trees along road; no crosswalk visible.

@@ -1,0 +1,43 @@
+q055	cant_tell	0	0	cant_tell	-	tow truck in road; no crosswalk corner in view
+q056	cant_tell	0	0	cant_tell	-	tow truck at street edge; sidewalk partly hidden
+q057	visible	1	0	clear	-	16th St crosswalk; yellow pad at right corner, ramp unclear [upgraded: yellow warning pad confirmed on coordinator spot-check]
+q058	cant_tell	0	0	clear	-	corner with hydrant; no crosswalk visible
+q060	cant_tell	0	0	clear	-	sidewalk by wall; parked car at curb; no crosswalk
+q061	cant_tell	0	0	clear	-	residential corner; no crosswalk visible
+q062	cant_tell	0	0	clear	-	residential corner; no crosswalk visible
+q063	visible	1	0	clear	-	corner with yellow curb mark; no crosswalk visible [upgraded: yellow warning pad confirmed on coordinator spot-check]
+q064	cant_tell	0	0	clear	-	corner with sandwich sign; sidewalk open
+q066	cant_tell	0	0	clear	-	corner with yellow curb strip; no crosswalk visible
+q068	cant_tell	0	0	cant_tell	-	parked cars; sidewalk not clearly visible
+q069	cant_tell	0	0	cant_tell	-	parked cars at curb; sidewalk unclear
+q070	cant_tell	0	0	clear	-	intersection; orange curb strips unclear as ramps
+q072	cant_tell	0	0	clear	-	empty corner beside fenced lot; no crosswalk
+q073	cant_tell	0	0	cant_tell	-	crosswalk stripes in foreground; corner unclear
+q074	cant_tell	0	0	clear	-	church corner; green crate at sidewalk edge
+q075	cant_tell	0	0	cant_tell	-	church corner; van parked at curb
+q077	cant_tell	0	0	clear	-	wide intersection; corner pad unclear
+q078	visible	1	0	clear	-	corner with trash bins; yellow pad unclear [upgraded: yellow warning pad confirmed on coordinator spot-check]
+q079	cant_tell	0	0	cant_tell	-	parking lot; no curb ramp visible
+q080	cant_tell	0	0	clear	-	stop sign corner; crosswalk stripes; ramp unclear
+q082	cant_tell	0	0	cant_tell	-	driveway and parked car; no crosswalk visible
+q083	cant_tell	0	0	cant_tell	-	apartment parking lot; no sidewalk corner
+q084	cant_tell	0	0	clear	-	corner with yellow curb paint; ramp unclear
+q085	cant_tell	0	0	cant_tell	-	corner with gravel edge; no crosswalk visible
+q087	cant_tell	0	0	cant_tell	-	freeway roadside; no sidewalk visible
+q088	cant_tell	0	0	clear	-	under-freeway sidewalk; belongings only
+q089	cant_tell	0	0	clear	-	wall-side sidewalk with red curb; no crosswalk
+q090	cant_tell	0	0	cant_tell	-	highway lanes; no sidewalk visible
+q092	cant_tell	0	0	cant_tell	-	crosswalk at corner; vehicle in crosswalk; ramp unclear
+q093	cant_tell	0	0	clear	-	office frontage; rock beds; no crosswalk
+q094	cant_tell	0	0	cant_tell	-	night freeway; no sidewalk
+q095	cant_tell	0	0	clear	-	fenced slope sidewalk; no crosswalk
+q097	cant_tell	0	0	cant_tell	-	crosswalk stripes at left; corners unclear
+q098	cant_tell	0	0	cant_tell	-	traffic signals; vehicles; sidewalk unclear
+q099	cant_tell	0	0	cant_tell	-	night intersection; sidewalk not visible
+q100	cant_tell	0	0	cant_tell	-	intersection with signals; sidewalk unclear
+q101	cant_tell	0	0	clear	-	utility pole at corner; no crosswalk visible
+q102	cant_tell	0	0	cant_tell	-	driveway with parked truck; no sidewalk
+q103	cant_tell	0	0	cant_tell	-	residential driveway; no crosswalk
+q104	cant_tell	0	0	clear	-	sidewalk; parked car at curb
+q106	cant_tell	0	0	clear	-	store frontage; sign shelter; no crosswalk
+q107	cant_tell	0	0	clear	-	storefront sidewalk planters; corner unclear

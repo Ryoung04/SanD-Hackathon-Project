@@ -1,0 +1,35 @@
+p01	cant_tell	clear	-	residential landscaping, sidewalk visible, no corner in view
+p02	cant_tell	clear	-	storefront and red-painted curb; crossing ramp not clearly visible
+p03	cant_tell	clear	-	parked vehicles and building wall; no corner visible
+p04	cant_tell	cant_tell	-	parking lot entrance with parked cars; no sidewalk corner clear
+p05	cant_tell	clear	-	corner with driveway apron; no ramp clearly visible
+p06	cant_tell	cant_tell	-	white van fills frame; no corner or walkway visible
+p07	cant_tell	cant_tell	-	concrete wall in foreground; no corner or sidewalk visible
+p08	cant_tell	clear	-	curved curb and green crosswalk; ramp not clearly visible
+p09	cant_tell	cant_tell	-	concrete wall with red curb; no sidewalk or corner visible
+p10	cant_tell	cant_tell	-	driveway with parked SUV; no corner visible
+p11	cant_tell	clear	-	corner at left with hydrant at curb; ramp not clear
+p12	cant_tell	clear	-	corner with utility pole at curb; ramp not clear
+p13	cant_tell	cant_tell	-	parked cars along curb; no corner visible
+p14	cant_tell	clear	-	parking structure frontage; corner not in view
+p15	cant_tell	clear	-	under overpass; curb corner visible, no clear ramp
+p16	cant_tell	clear	-	intersection far away; corner curbs too distant
+p17	cant_tell	clear	-	utility pole at corner; ramp not clearly visible
+p18	cant_tell	cant_tell	-	small dark object on corner sidewalk, unidentified
+p19	cant_tell	cant_tell	-	freeway underpass; no sidewalk or corner visible
+p20	cant_tell	clear	-	parking meters at curb edge; no corner visible
+p21	cant_tell	cant_tell	-	parked cars at curb; cafe umbrellas on right sidewalk partly visible
+p22	cant_tell	cant_tell	-	trees, fence and parked trucks; no corner clearly visible
+p23	cant_tell	cant_tell	-	dirt shoulder and orange railing; no sidewalk visible
+p24	cant_tell	cant_tell	-	metal fence and gate; sidewalk behind fence partly visible
+p25	cant_tell	cant_tell	-	fence along dirt lot; no sidewalk or corner visible
+p26	cant_tell	cant_tell	-	house side view and driveway; no corner visible
+p27	cant_tell	cant_tell	-	construction site with cones; corner and sidewalk unclear
+p28	cant_tell	cant_tell	-	block wall and planting; no sidewalk or corner visible
+p29	cant_tell	cant_tell	-	residential house and parked car; no corner visible
+p30	cant_tell	clear	-	residential corner; sidewalk visible; ramp not clear
+p31	visible	obstructed	construction fence and cones	detectable-warning pattern at corner; construction fence and cone on sidewalk
+p32	cant_tell	cant_tell	-	bumper blocks view; chain-link fence at left, sidewalk unclear
+p33	cant_tell	cant_tell	-	parked SUV and houses; no corner visible
+p34	cant_tell	clear	-	intersection corners visible but ramps not clear
+p35	cant_tell	clear	-	building side and yellow curb; no ramp visible

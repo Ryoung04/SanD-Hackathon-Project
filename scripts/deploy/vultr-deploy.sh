@@ -9,7 +9,7 @@ cd "$(dirname "$0")/../.."
 
 npm run build >/dev/null
 tar czf /tmp/accesspath-release.tgz --exclude=.next/cache .next package.json package-lock.json next.config.mjs \
-  $( [ -d public ] && echo public ) $( [ -f data/notices.json ] && echo data/notices.json )
+  $( [ -d public ] && echo public ) $( [ -f data/notices.json ] && echo data/notices.json ) $( [ -f data/imagery_checks.json ] && echo data/imagery_checks.json ) $( [ -d data/derived ] && echo data/derived )
 scp -i "$KEY" -q /tmp/accesspath-release.tgz root@"$IP":/tmp/release.tgz
 rm -f /tmp/accesspath-release.tgz
 

@@ -1,0 +1,32 @@
+q005	visible	2	0	clear	-	yellow pad at right corner by crosswalk; yellow pad at left curb near crosswalk
+q010	visible	1	1	clear	-	crosswalk corner at left; no pad visible; yellow pad at curb corner by crosswalk
+q015	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q020	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q025	cant_tell	0	0	clear	-	crosswalk meets red-curb corner; no pad visible [negative downgraded: unverified]
+q034	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q042	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q045	visible	1	0	obstructed	blue wheeled trash bins	yellow pad at right corner by crosswalk
+q050	visible	1	0	clear	-	yellow pad at corner beside planter
+q055	visible	2	0	obstructed	construction fence	yellow pad at right corner; cones near sidewalk; yellow pad at upper-left curb near crosswalk
+q064	visible	1	0	clear	-	yellow pad at curb-ramp corner
+q069	cant_tell	0	0	clear	-	crosswalk meets red-curb corner; no pad visible [negative downgraded: unverified]
+q072	visible	3	0	clear	-	yellow pad at curb by crosswalk; yellow pad at curb by crosswalk; yellow pad at curb corner by crosswalk
+q077	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q081	visible	2	0	clear	-	yellow pad at right corner by bollards; yellow tactile pad at bottom-right corner
+q086	visible	1	0	clear	-	dark tactile pad on curved corner ramp
+q091	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q096	visible	1	0	clear	-	yellow pad at upper-right corner by crosswalk
+q101	visible	5	0	clear	-	yellow pads at both crosswalk corners; yellow pad at corner by crosswalk; yellow pad at curb corner; crosswalk unclear; 
+q104	visible	2	0	clear	-	yellow pad at corner by planter; yellow pad at lower-left corner; ad sign
+q114	visible	1	0	clear	-	yellow tactile pad on corner ramp
+q123	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q127	visible	2	0	clear	-	yellow strip at left corner by crosswalk; yellow pad at sidewalk edge by crosswalk
+q129	visible	1	0	clear	-	yellow pad at top corner; painted accessible symbol
+q133	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q136	visible	1	0	clear	-	yellow tactile pad at corner
+q140	visible	1	0	clear	-	yellow pad at right corner
+q145	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q147	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q150	cant_tell	0	0	clear	-	panorama tiles inconclusive
+q151	visible	1	0	clear	-	yellow pad on corner ramp
+q154	cant_tell	0	0	clear	-	panorama tiles inconclusive

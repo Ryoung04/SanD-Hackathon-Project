@@ -10,11 +10,13 @@ import { listObservations } from "@/lib/data/observations";
 import { haversineMeters, padBbox } from "@/lib/data/geo";
 import type { BarrierObservation, Bbox, Geometry } from "@/lib/data/types";
 import { readNoticeCache } from "@/lib/web/noticeStore";
+import { getImageryCheck } from "@/lib/ai/imageryChecks";
 import { BriefDraft, finalizeBrief, type EvidenceBrief, type SeenRecord } from "./brief";
+import { buildQuickBrief, QUICK_RADIUS_M } from "./quickBrief";
 
 // flash-lite first: 3.5-flash often stalls (503/timeouts) and the fallback cost ~35 s in testing.
 const DEFAULT_MODELS = ["gemini-3.1-flash-lite", "gemini-3.5-flash"];
-const MAX_STEPS = 6;
+const MAX_STEPS = 10; // 4 tools + final answer; 6 was too tight (runs ended mid tool-calls with no brief)
 const TIMEOUT_MS = 45_000;
 const LOOKUP_PAD_M = 60;
 
@@ -55,6 +57,16 @@ function view(o: BarrierObservation, from?: [number, number]) {
     source_url: o.source_url,
     description: (o.description || "").slice(0, 240),
     ...(from ? { distance_m: Math.round(haversineMeters(from, [lon, lat])) } : {}),
+    ...(o.source_kind === "city_gis"
+      ? {
+          inventory_counts: {
+            ramps_required: (o.metadata as any)?.RAMPS_REQUIRED ?? null,
+            ramps_existing: (o.metadata as any)?.RAMPS_EXISTING ?? null,
+            ramp_deficit: (o.metadata as any)?.RAMP_DEFICIT ?? null,
+            aps_deficit: (o.metadata as any)?.APS_DEFICIT ?? null,
+          },
+        }
+      : {}),
     ...(o.source_kind === "traffic_control"
       ? { permit_dates: { start: (o.metadata as any)?.date_start ?? null, end: (o.metadata as any)?.date_end ?? null } }
       : {}),
@@ -77,7 +89,7 @@ function modelChain() {
 const INSTRUCTIONS = `You are an evidence investigator for a San Diego accessibility-awareness map.
 You receive one selected map record. Use the tools to gather evidence, then write a short brief.
 
-Process: call get_barrier first; then get_nearby_records; then get_construction_notices.
+Process: call get_barrier first; then get_nearby_records; then get_construction_notices; then get_image_evidence. Call each tool ONCE, then answer.
 Compare source types (official inventory vs 311 report vs permit vs news notice vs AI candidate),
 dates, verification status, and geographic precision.
 
@@ -87,8 +99,20 @@ Hard rules:
 - Never say a place/route is accessible, ADA compliant, wheelchair safe, passable, or verified. Unknown stays unknown.
 - A construction permit or news article is not proof a sidewalk is blocked. An intersection-level record does not say which corner.
 - If sources disagree (e.g. official vs AI candidate, or dates do not overlap), list it under conflicts; do not pick a winner.
+- Image evidence is ONE street photo analyzed by AI (unverified). "not_visible" is NOT proof a ramp is missing (the photo may face elsewhere);
+  "visibly_present" shows at least one ramp, not that every corner has one. Only call it a conflict if the photo shows a ramp where the city lists ramps_existing = 0.
+  Always mention the photo date and that it is an AI reading of one image.
 - Put what cannot be known (current condition, exact corner, whether a permit affects the sidewalk) in uncertainties.
 - summary: 1-3 plain sentences for a resident. Do not include record ids in the summary. No recommendations to travel or avoid.`;
+
+/** Instant rule-based brief (no model call). Throws InvestigateError("NOT_FOUND"). */
+export async function quickInvestigate(input: { barrier_id: string; lat: number; lon: number }): Promise<{ brief: EvidenceBrief }> {
+  const barrier = await getBarrierNear(input.barrier_id, input.lat, input.lon);
+  if (!barrier) throw new InvestigateError("NOT_FOUND", "No current record with that id near the given location");
+  const at = anchor(barrier.geometry);
+  const r = await listObservations({ bbox: pointBbox(at[0], at[1], QUICK_RADIUS_M), limit: 500 });
+  return { brief: buildQuickBrief(barrier, r.data, getImageryCheck(barrier.id)) };
+}
 
 /** Run the agent for one barrier. Throws InvestigateError. */
 export async function investigateBarrier(input: { barrier_id: string; lat: number; lon: number }): Promise<InvestigateResult> {
@@ -159,12 +183,38 @@ export async function investigateBarrier(input: { barrier_id: string; lat: numbe
       }),
   });
 
+  const getImages = createTool({
+    id: "get_image_evidence",
+    description: "AI (Gemini) reading of the nearest permitted Mapillary street photo for the selected record, if one was analyzed. Unverified.",
+    inputSchema: z.object({}),
+    execute: async () =>
+      record<Record<string, unknown>>("get_image_evidence", {}, async () => {
+        const c = getImageryCheck(barrier.id);
+        if (!c || c.status !== "analyzed" || !c.image) return { ids: [], out: { available: false, reason: c?.status ?? "not_checked" } };
+        seen.set(`link:${c.image.page_url}`, { id: `link:${c.image.page_url}`, source_url: c.image.page_url, link_only: true });
+        for (const id of c.observation_ids) seen.set(id, { id, source_url: c.image.page_url });
+        return {
+          ids: c.observation_ids,
+          out: {
+            available: true,
+            photo: { page_url: c.image.page_url, captured_at: c.image.captured_at, attribution: c.image.attribution, camera_distance_m: c.image.distance_m },
+            curb_ramp_visibility: c.curb_ramp_visibility,
+            no_clear_evidence: c.no_clear_evidence,
+            candidates: c.candidates,
+            candidate_observation_ids: c.observation_ids,
+            image_quality_notes: c.image_quality_notes,
+            verification_status: "ai_candidate",
+          },
+        };
+      }),
+  });
+
   const agent = new Agent({
     id: "evidence-investigator",
     name: "Evidence investigator",
     instructions: INSTRUCTIONS,
     model: models,
-    tools: { get_barrier: getBarrier, get_nearby_records: getNearby, get_construction_notices: getNotices },
+    tools: { get_barrier: getBarrier, get_nearby_records: getNearby, get_construction_notices: getNotices, get_image_evidence: getImages },
   });
 
   // One shared deadline. Structured output is occasionally missing/malformed (seen ~1 in 6
@@ -184,7 +234,11 @@ export async function investigateBarrier(input: { barrier_id: string; lat: numbe
       if (deadline.aborted || /abort|timeout/i.test(msg)) throw new InvestigateError("TIMEOUT", `Agent exceeded ${TIMEOUT_MS / 1000}s`);
       throw new InvestigateError("AI_UPSTREAM", msg.slice(0, 200));
     }
+    // Mastra may return (not throw) when the deadline fires mid-run.
+    if (deadline.aborted || res?.finishReason === "aborted") throw new InvestigateError("TIMEOUT", `Agent exceeded ${TIMEOUT_MS / 1000}s`);
     const parsed = BriefDraft.safeParse(res?.object);
+    if (process.env.INVESTIGATE_DEBUG)
+      console.error(`[investigate] attempt ${attempt}: object=${JSON.stringify(res?.object)?.slice(0, 600)} text=${String(res?.text ?? "").slice(0, 300)} finish=${res?.finishReason} steps=${res?.steps?.length} trace=${trace.map((t) => t.tool.replace("get_", "")).join(",")} issues=${parsed.success ? "none" : JSON.stringify(parsed.error.issues).slice(0, 400)}`);
     if (parsed.success) {
       try {
         return { brief: finalizeBrief(barrier.id, parsed.data, [...seen.values()]), trace, model: res?.response?.modelId ?? null };

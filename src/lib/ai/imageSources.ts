@@ -9,7 +9,7 @@ const OK_LICENSE = /^(CC0|Public domain|CC BY(-SA)? \d\.\d)$/i;
 
 export interface ImageReference {
   image_reference: string; // e.g. "commons:File:Curb Ramp in San Diego.jpg" or "upload:<id>"
-  source: "wikimedia_commons" | "participant_upload";
+  source: "wikimedia_commons" | "participant_upload" | "mapillary";
   page_url: string | null;
   license: string | null;
   attribution: string | null;

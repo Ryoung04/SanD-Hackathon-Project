@@ -95,6 +95,47 @@ export function normalizeProwagRamp(feature: ArcGisFeature, layerLastEditIso: st
   };
 }
 
+export const PROWAG_APS_URL =
+  'https://services8.arcgis.com/WunV6yKxvEXfsV4W/ArcGIS/rest/services/CSD_PROWAG_FINAL_V2_WFL1/FeatureServer/1';
+
+/** PROWAG layer 1 "Missing APS": intersections lacking accessible pedestrian signals (audible/vibrotactile).
+ *  Same schema as layer 2; separate id namespace so an intersection can carry both a ramp and an APS record. */
+export function normalizeProwagAps(feature: ArcGisFeature, layerLastEditIso: string | null, now: Date = new Date()): BarrierObservation | null {
+  const a = feature.attributes ?? {};
+  const x = feature.geometry?.x, y = feature.geometry?.y;
+  if (!validLonLat(x, y)) return null;
+  const objectId = a.OBJECTID;
+  if (objectId === null || objectId === undefined) return null;
+  const apsDef = num(a.APS_DEFICIT) ?? 0;
+  if (apsDef <= 0) return null;
+  const label = `Intersection missing accessible pedestrian signals at ${apsDef} crossing${apsDef === 1 ? '' : 's'} (which crossings unknown)`;
+  return {
+    id: `city_gis:prowag1:${objectId}`,
+    category: 'crossing_issue',
+    label,
+    geometry: { type: 'Point', coordinates: [x as number, y as number] },
+    geometry_precision: 'intersection',
+    source_kind: 'city_gis',
+    source_record_id: String(objectId),
+    source_url: PROWAG_APS_URL,
+    source_observed_at: null,
+    source_updated_at: layerLastEditIso,
+    ingested_at: now.toISOString(),
+    verification_status: 'official_inventory',
+    routing_impact: 'informational',
+    severity: 'unknown',
+    description: label,
+    evidence: [],
+    metadata: {
+      layer: 'missing_aps',
+      NODE_ID: a.NODE_ID ?? null,
+      APPROACH_COUNT: num(a.APPROACH_COUNT),
+      APS_DEFICIT: apsDef,
+      cpname: a.cpname ?? null,
+    },
+  };
+}
+
 // ---------- Traffic control ----------
 
 export function normalizeTrafficControl(feature: ArcGisFeature, now: Date = new Date()): BarrierObservation | null {

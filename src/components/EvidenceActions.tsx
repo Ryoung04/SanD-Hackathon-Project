@@ -15,7 +15,7 @@ interface Props {
 
 /**
  * Optional Owner C actions on a selected record:
- *  - "Explain evidence (AI)" -> POST /api/investigate (Mastra agent, 8-20 s).
+ *  - "Explain evidence" -> POST /api/investigate (default: instant brief built from the records, no AI).
  *  - "Read aloud" -> POST /api/speak (ElevenLabs). Speaks only on-screen text.
  * Each button hides itself if its endpoint isn't deployed. Errors show a short message;
  * the record detail stays usable. The AI summary is labelled unverified and informational.
@@ -43,7 +43,7 @@ export default function EvidenceActions({ target, onScreenText }: Props) {
     setBusy("speak");
     setSpeakMsg(null);
     // Once the AI summary is on screen, read that (with its caveat); otherwise the record text.
-    const text = explain?.ok ? `${explain.summary} ${explain.note ?? "AI summary, unverified."}` : onScreenText;
+    const text = explain?.ok ? `${explain.summary} ${explain.note ?? "Summary of public records, unverified."}` : onScreenText;
     const r = await speak(text);
     if (r.ok) {
       if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
@@ -62,7 +62,7 @@ export default function EvidenceActions({ target, onScreenText }: Props) {
     <div className="evidence-actions">
       <div className="row">
         {canExplain && (
-          <button type="button" onClick={onExplain} disabled={busy !== null}>{busy === "investigate" ? "Explaining… (up to 20 s)" : "Explain evidence (AI)"}</button>
+          <button type="button" onClick={onExplain} disabled={busy !== null}>{busy === "investigate" ? "Explaining…" : "Explain evidence"}</button>
         )}
         {!notDeployed.speak && (
           <button type="button" onClick={onSpeak} disabled={busy !== null}>{busy === "speak" ? "Loading audio…" : explain?.ok ? "Read summary aloud" : "Read aloud"}</button>
@@ -71,7 +71,7 @@ export default function EvidenceActions({ target, onScreenText }: Props) {
       <div aria-live="polite">
         {explain?.ok && (
           <div className="caveat small investigation">
-            <p><strong>AI summary (unverified):</strong> {explain.summary}</p>
+            <p><strong>Evidence summary (unverified):</strong> {explain.summary}</p>
             {explain.note && <p className="muted">{explain.note}</p>}
             {explain.uncertainties.length > 0 && (
               <>

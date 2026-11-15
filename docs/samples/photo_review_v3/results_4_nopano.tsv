@@ -1,0 +1,41 @@
+q163	cant_tell	0	0	clear	-	building corner; no crosswalk or ramp visible
+q164	cant_tell	0	0	cant_tell	-	palm corner; yellow diagonal poles, no ramp visible
+q165	cant_tell	0	0	cant_tell	-	hillside bank and roadway; no crosswalk visible
+q167	cant_tell	0	0	clear	-	parked cars, palms; no crosswalk visible
+q168	cant_tell	0	0	clear	-	red pickup close-up; no crosswalk visible
+q170	cant_tell	0	0	cant_tell	-	freeway with exit sign; no sidewalk visible
+q171	cant_tell	0	0	clear	-	apartment building, parked red car; no crosswalk
+q172	cant_tell	0	0	clear	-	garage houses at corner; no crosswalk or ramp
+q173	cant_tell	0	0	cant_tell	-	crosswalk stripes at left; ramp not clearly visible
+q175	cant_tell	0	0	cant_tell	-	stop sign, pavement marking; corner unclear
+q176	cant_tell	0	0	cant_tell	-	guardrail and vegetation; no crosswalk visible
+q177	cant_tell	0	0	cant_tell	-	roadway at dusk; no crosswalk or corner visible
+q178	cant_tell	0	0	cant_tell	-	night street, stop sign; ramp not clearly visible
+q180	cant_tell	0	0	clear	-	palm-lined house steps; no crosswalk visible
+q181	cant_tell	0	0	clear	-	parked pickup in driveway; no crosswalk visible
+q182	cant_tell	0	0	clear	-	driveway and parked SUV; no crosswalk visible
+q184	cant_tell	0	0	clear	-	utility pole and curb-side bins; no crosswalk
+q185	cant_tell	0	0	clear	-	pickup truck in street; no crosswalk visible
+q186	cant_tell	0	0	clear	-	corner street sign; carts at curb; no ramp visible
+q187	cant_tell	0	0	clear	-	corner fence, parked white car; no ramp visible
+q189	cant_tell	0	0	clear	-	house at corner; no crosswalk or ramp visible
+q191	cant_tell	0	0	clear	-	overgrown corner lot; no crosswalk visible
+q192	cant_tell	0	0	clear	-	corner wall, parked car; no crosswalk visible
+q193	cant_tell	0	0	clear	-	corner wall and sidewalk; no ramp visible
+q194	cant_tell	0	0	clear	-	white car at corner; no crosswalk visible
+q196	cant_tell	0	0	clear	-	blue bin at corner curb; no crosswalk visible
+q197	cant_tell	0	0	clear	-	parked cars at curb; no crosswalk visible
+q198	cant_tell	0	0	cant_tell	-	roadway with guardrail; no sidewalk corner visible
+q199	cant_tell	0	0	cant_tell	-	freeway overpass with fence; no crosswalk
+q201	cant_tell	0	0	clear	-	driveway lot, parked trucks; no crosswalk visible
+q202	cant_tell	0	0	cant_tell	-	blue construction fence at curb; sidewalk unclear
+q203	cant_tell	0	0	cant_tell	-	dark night street; no crosswalk or ramp visible
+q204	cant_tell	0	0	clear	-	driveway lot with fence and cars; no crosswalk
+q206	cant_tell	0	0	clear	-	stop-sign corner, crosswalk stripes left; ramp unclear
+q207	cant_tell	1	0	clear	-	faded yellow patch at corner; no crosswalk visible
+q208	cant_tell	0	0	clear	-	black pickup at curb; no crosswalk visible
+q209	cant_tell	0	0	clear	-	stop-sign corner, white wall; no ramp visible
+q211	cant_tell	0	0	clear	-	corner textured pad unclear in color; no crosswalk
+q212	cant_tell	0	0	cant_tell	-	wide intersection, parked cars; no ramp visible
+q213	cant_tell	0	0	cant_tell	-	night street; no crosswalk or ramp visible
+q214	visible	1	0	clear	-	yellow pad at corner curb; crosswalk not clear
