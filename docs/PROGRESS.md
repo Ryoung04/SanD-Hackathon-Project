@@ -1,5 +1,11 @@
 # Progress
 
+## Owner B — Hills: terrain + hillshade on the 3D map (2026-11-14)
+- **Data:** our cached USGS 3DEP samples (`data/raw/elevation-samples.json`, 15,861 points along mapped paths, 1–87 m). `scripts/elevation/build-terrain.ts` runs OFFLINE: IDW onto a 10 m grid, fading to sea level beyond 150–400 m from any sample, written as Terrarium PNG tiles `public/data/terrain/{z}/{x}/{y}.png` (z11–15, 36 tiles, 313 KB) + `meta.json`.
+- **Map** (`MapView3D.tsx`, `TERRAIN` config): raster-dem terrain (×1.8 exaggeration) plus a hillshade under roads and overlays. "Hills on/off" toggle, remembered per browser. The legend says heights are exaggerated and interpolated between streets. If the tiles are missing, the map stays flat and the toggle is hidden.
+- **Check:** tile elevations vs. samples: 0.16 m mean / 0.6 m max error (40 points). Tests: `tests/ui/terrain.test.ts` (encoding, PNG). `npm run test:ui` all pass; `npm run build` OK.
+- **Rebuild:** after the elevation samples change (e.g. the study area widens): `npx tsx scripts/elevation/fetch-slopes.ts`, then `npx tsx scripts/elevation/build-terrain.ts`.
+
 ## Owner B — Two-pass road policy: roads only as a last resort (2026-11-14)
 - **Why:** road cost was a flat multiplier, so for wheelchair profiles a steep sidewalk (x5/x10 above 12%) could cost more than a road (x2.5–4), and the router chose the road.
 - **Design** (`src/lib/routing/graphRouter.ts`, `routeOnGraph` → `searchOnce`, `withRoadPolicy`):

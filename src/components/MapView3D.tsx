@@ -204,6 +204,34 @@ function applyStyle(m: MLMap, style: MapStyle, orig: Orig) {
 }
 
 const STYLE_KEY = "accesspath.mapStyle";
+const HILLS_KEY = "accesspath.hills";
+
+/**
+ * Hills: terrain + hillshade from our own tiles (scripts/elevation/build-terrain.ts, USGS 3DEP
+ * samples, offline). Exaggerated so gentle downtown grades read at a glance; between streets the
+ * surface is interpolated. If the tiles are missing the map stays flat and the toggle hides.
+ */
+export const TERRAIN = {
+  metaUrl: "/data/terrain/meta.json",
+  tiles: "/data/terrain/{z}/{x}/{y}.png",
+  exaggeration: 1.8,
+  hillshade: { "hillshade-exaggeration": 0.45, "hillshade-shadow-color": "#4b5a6b", "hillshade-highlight-color": "#ffffff", "hillshade-accent-color": "#6b7a8a", "hillshade-illumination-direction": 315 },
+};
+async function addTerrain(m: MLMap): Promise<boolean> {
+  try {
+    const res = await fetch(TERRAIN.metaUrl);
+    if (!res.ok) return false;
+    const meta = await res.json();
+    const src = { type: "raster-dem", tiles: [new URL(TERRAIN.tiles, location.origin).href.replace(/%7B/g, "{").replace(/%7D/g, "}")], tileSize: 256, encoding: "terrarium", minzoom: meta.minzoom, maxzoom: meta.maxzoom, bounds: meta.bounds } as any;
+    // Separate sources for terrain and hillshade (MapLibre recommendation: avoids tile-size conflicts).
+    m.addSource("terrain-dem", src);
+    m.addSource("hillshade-dem", src);
+    // Under roads and our overlays, above land/water fills.
+    const firstLine = m.getStyle().layers?.find((l) => l.type === "line")?.id;
+    m.addLayer({ id: "hills-shade", type: "hillshade", source: "hillshade-dem", paint: TERRAIN.hillshade as any }, firstLine);
+    return true;
+  } catch { return false; }
+}
 const readStyle = (): MapStyle => {
   try { const v = localStorage.getItem(STYLE_KEY); return v === "street" || v === "plain" ? v : "color"; } catch { return "color"; }
 };
@@ -228,7 +256,12 @@ export default function MapView3D(p: Props) {
   const [shown, setShown] = useState<Record<GroupKey, boolean>>({ buildings: true, paths: true, kerbs: true, steps: true, ramps: true, slope: true, elevators: true });
   const [accessStatus, setAccessStatus] = useState<string>("Loading slope data…");
   const [style, setStyle] = useState<MapStyle>("color");
-  useEffect(() => { setStyle(readStyle()); }, []);
+  const [hills, setHills] = useState(true);
+  const [hasTerrain, setHasTerrain] = useState(false);
+  useEffect(() => {
+    setStyle(readStyle());
+    try { if (localStorage.getItem(HILLS_KEY) === "off") setHills(false); } catch { /* default on */ }
+  }, []);
   const origPaint = useRef<Orig>({});
   const [accessNote, setAccessNote] = useState<string | null>(null);
   const cbs = useRef(p);
@@ -276,6 +309,8 @@ export default function MapView3D(p: Props) {
             "fill-extrusion-opacity": 0.92,
           },
         }, firstLabel);
+
+        setHasTerrain(await addTerrain(m));
 
         m.addSource("study", { type: "geojson", data: { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: [[w, s], [e, s], [e, n], [w, n], [w, s]] } } });
         m.addLayer({ id: "study-outline", type: "line", source: "study", paint: { "line-color": t.ink, "line-width": 1.5, "line-dasharray": [4, 3], "line-opacity": 0.6 } });
@@ -474,6 +509,14 @@ export default function MapView3D(p: Props) {
 
   useEffect(() => {
     const m = map.current;
+    if (!ready || !m || !hasTerrain) return;
+    (m as any).setTerrain(hills ? { source: "terrain-dem", exaggeration: TERRAIN.exaggeration } : null);
+    m.setLayoutProperty("hills-shade", "visibility", hills ? "visible" : "none");
+    try { localStorage.setItem(HILLS_KEY, hills ? "on" : "off"); } catch { /* per-viewer convenience only */ }
+  }, [hills, hasTerrain, ready]);
+
+  useEffect(() => {
+    const m = map.current;
     if (!ready || !m || !p.focus) return;
     m.easeTo({ center: p.focus.at, zoom: Math.max(m.getZoom(), 18.5), duration: 600 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -492,6 +535,11 @@ export default function MapView3D(p: Props) {
       <div ref={el} className="map" role="region" aria-label="Map of downtown San Diego with potential accessibility barriers" />
       <div className="map-overlay">
         <button type="button" aria-pressed={tilted} onClick={toggle3d}>{tilted ? "Flat view" : "3D view"}</button>
+        {hasTerrain && (
+          <button type="button" aria-pressed={hills} onClick={() => setHills((h) => !h)} title="Shaded, raised terrain from USGS elevation data (height exaggerated)">
+            {hills ? "Hills on" : "Hills off"}
+          </button>
+        )}
         <div className="style-switch" role="radiogroup" aria-label="Map style">
           {MAP_STYLES.map((o) => (
             <button key={o.key} type="button" role="radio" aria-checked={style === o.key} onClick={() => setStyle(o.key)}>{o.label}</button>
@@ -510,7 +558,7 @@ export default function MapView3D(p: Props) {
             ))}
           </ul>
           <p className="small muted">
-            Curb ramps: ▼ lowered · ▲ raised · ? unknown. Crosswalks: zebra stripes. Stairs: dashed orange. Street detail: sidewalks drawn as concrete at a typical (not measured) width, crosswalks as white stripes. Ramps: magenta; R = mapped, ? = unconfirmed candidate. Slope colors: green = gentle, amber = moderate, red = steep; red short dashes = very steep, possibly unmapped stairs; solid = measured, dashed = estimate; "~6%" = not measured. A slope value is never proof a route is accessible. Sidewalk, curb and stair detail is community-mapped (OpenStreetMap), may be incomplete, and is not verified. Missing detail means unknown.
+            Curb ramps: ▼ lowered · ▲ raised · ? unknown. Crosswalks: zebra stripes. Stairs: dashed orange. Street detail: sidewalks drawn as concrete at a typical (not measured) width, crosswalks as white stripes. Ramps: magenta; R = mapped, ? = unconfirmed candidate. Slope colors: green = gentle, amber = moderate, red = steep; red short dashes = very steep, possibly unmapped stairs; solid = measured, dashed = estimate; "~6%" = not measured. Hills: USGS 3DEP elevation, height exaggerated ×{TERRAIN.exaggeration} for readability; between streets the ground is interpolated. A slope value is never proof a route is accessible. Sidewalk, curb and stair detail is community-mapped (OpenStreetMap), may be incomplete, and is not verified. Missing detail means unknown.
           </p>
           <ul className="slope-legend" aria-label="Slope bands">
             {SLOPE_BANDS.map((b) => (
