@@ -75,6 +75,17 @@ describe('store', () => {
     const r = await listObservations({ bbox });
     expect(r.data.map((o) => o.id)).toEqual(['traffic_control:2']);
   });
+  it('pages list official records before 311 and paging covers every record once', async () => {
+    const r311 = Array.from({ length: 3 }, (_, i) => mk({ id: `city_311:${i}`, source_record_id: String(i), source_kind: 'city_311', verification_status: 'unverified_report', routing_impact: 'possible_obstacle' }));
+    const tc = mk({ id: 'traffic_control:7', source_record_id: '7', source_kind: 'traffic_control', category: 'construction_warning' });
+    await upsertObservations([...r311, mk(), tc]);
+    const p1 = await listObservations({ bbox, limit: 2 });
+    expect(p1.data.map((o) => o.source_kind)).toEqual(['city_gis', 'traffic_control']);
+    const seen = [...p1.data.map((o) => o.id)];
+    let cursor = p1.next_cursor;
+    while (cursor) { const p = await listObservations({ bbox, limit: 2, cursor }); seen.push(...p.data.map((o) => o.id)); cursor = p.next_cursor; }
+    expect(seen).toEqual(['city_gis:prowag2:2960', 'traffic_control:7', 'city_311:0', 'city_311:1', 'city_311:2']);
+  });
   it('near-route finds close points only', async () => {
     await upsertObservations([mk()]);
     const near = await findNearRoute({ type: 'LineString', coordinates: [[-117.1708, 32.7285], [-117.1708, 32.7295]] }, 30);

@@ -16,6 +16,56 @@
 - Live ingest to Neon: city_gis 165 (88 ramp + 77 APS), traffic_control 119 active, city_311 1194 (of 10,293 rows in bbox), 0 rejected. Total 1479 current. Golden Hill notice now has 21 records within 200 m.
 - Tests: `npm test` 241 pass + 1 todo (`tests/data/prowagAps.test.ts`), `test:ui` 44.
 
+## Owner B — AccessPath graph router + elevation slopes (2026-11-14)
+- **Router:** `POST /api/route` now routes on our own OSM walking graph first, with Valhalla as the fallback.
+  - The graph is `data/derived/downtown-graph.json` (19,307 nodes, 30,224 edges): 153 stairways, 79 building passages, 63 indoor corridors, 6,306 straight links across open plazas.
+  - Rebuild it with `npx tsx scripts/osm/fetch-graph.ts`, after running `scripts/elevation/fetch-slopes.ts` so slopes are attached.
+- **Profiles** (`PROFILES` in `src/lib/routing/graphRouter.ts`):
+  - `pedestrian` may use stairs, passages, corridors and plazas.
+  - `wheelchair_preference` and `avoid_stairs` **never use stairs**; they penalise slopes over 5/8.3/12% and raised or unknown curbs, and `avoid_stairs` blocks raised curbs.
+  - If no step-free route exists, the result is "unavailable"; it never falls back to a router that might use stairs.
+- **API (additive):** body `router: "auto"|"graph"|"valhalla"` (default auto). The response adds `router`, `route_features{stairs, passages, open_areas, corridors, road_no_sidewalk_m}`, `fallback_reason` and `data_note`. `comparison` is only given when both routes come from the same provider. Router selection is in `src/lib/routing/planRoute.ts`.
+- **Elevation slopes:** `public/data/downtown-slopes.geojson` (USGS 3DEP 1 m lidar; 2,231 segments; 81 very-steep spots >12% shown as "possibly unmapped stairs"; height change for all 66 stairways). Built by `scripts/elevation/fetch-slopes.ts`, which caches samples in `data/raw/`.
+- **Live check:** at real stairway way/884953143, walking takes the stairs (14 m) and avoid_stairs detours 649 m without them. The sample trip uses a building passage and 4 plaza crossings.
+- **Tests:** `npm run test:ui` 146 pass. `tests/ui/graphRouter.test.ts` covers synthetic profile differences and router selection. `tests/ui/routingPoints.test.ts` runs real-map checks that report TODO notes and never fail. Build clean.
+
+## Owner B — Route context, directions, stair-avoid, place search, street style (2026-11-14)
+- **Route panel:**
+  - "Map details along this route" lists stairs, steep slopes, raised or unknown curbs, unconfirmed curb-ramp candidates, mapped curb ramps and elevators near the route. It uses the OSM snapshot plus C's access feed when connected; rules are in `CONTEXT_RULES` in `src/lib/map/routeContext.ts`.
+  - Step-by-step directions come from Valhalla; clicking a step pans the map to it.
+  - New preference "Avoid mapped stairs and hills" (`avoid_stairs`: wheelchair type, `step_penalty` 3600, `use_hills` 0; see `PROFILE_COSTING` in `src/lib/routing/provider.ts`).
+  - For preference profiles the API also fetches the standard walking route and shows the real difference.
+  - "Try a sample trip" button: Santa Fe Depot → Horton Plaza Park.
+- **`POST /api/route` response (additive, B-owned):** `profile`, `steps[{instruction, distance_m, begin_index, street}]`, `comparison{profile:"pedestrian", distance_m, duration_s} | null`. `profile` also accepts `avoid_stairs`.
+- **Place search:** offline search over places and intersections (`public/data/downtown-places.json`, 1,221 entries: 873 POIs, 348 intersections; refresh with `npx tsx scripts/osm/fetch-places.ts`). Handles abbreviations, "&"/"and"/"at", either street order and lettered streets ("E St").
+- **Map:** the 3D map has a style switch: Color / Street detail (aerial-like: asphalt roads, concrete sidewalks at a typical true width, white zebra crosswalks) / Plain. The choice is remembered per browser. The map and route panel share one access-data store (`src/lib/map/accessStore.ts`).
+- **Live check:** sample trip `avoid_stairs` returned 1,074 m, 12 directions, a comparison route and 12 nearby records; the context check found 15 curb ramps and 6 candidates, no stairs.
+- **Tests:** `npm run test:ui` 124 pass; typecheck and build clean. UI not yet click-tested in a browser.
+
+## Owner B — Merge to main + new endpoint wiring (2026-11-14)
+- **Merged** Daniel into main. Conflicts: `OWNER_B_REQUESTS.md` and `PROGRESS.md` (kept both sides), `package-lock.json` (regenerated with `npm install`).
+- **Connected:** C's `POST /api/investigate` (the real `{barrier_id, lat, lon}` contract; shows summary, uncertainties, conflicts, cited links and the caveat) and `POST /api/speak` (600-char limit, friendly BUDGET/RATE_LIMITED messages), plus A's `GET /api/sources` ("Data sources" panel).
+- **Files:** `src/lib/ui/evidenceClient.ts`, `src/components/{EvidenceActions,SourcesPanel,BarrierDetail}.tsx`, `src/app/page.tsx`, `tests/ui/evidenceClient.test.ts`.
+- **Tests:** `npm run test:ui` 110 pass; `npm test` 238 pass; typecheck and build clean. Not yet checked in a browser with live keys.
+
+## Owner B — Ramp/slope detail + C access-feed contract (2026-11-14)
+- **Outcome:** the map gets a "Ramps" layer (R = mapped, hollow ? = unconfirmed candidate) and a "Slope (where known)" layer. Slope bands go from light (gentle) to dark (steep), with a "~6%" label when a value is not measured; solid lines = measured/official, dashed = estimate. The popup shows ramp type, slope, cross slope, width, surface, handrail, landing, source, date, method, status and confidence. The base map is now colorful (pastel), with a "Plain colors" toggle.
+- **More ramps:** OSM snapshot refreshed (4,271 features: 5 tagged ramp paths, 541 lowered curbs = curb ramps, and **161 inferred curb-ramp candidates**, i.e. crossings with tactile paving but no curb mapped within 10 m; labelled inferred/low confidence).
+- **Ready for C:** `GET /api/access-features` is optional (a 404 leaves OSM only). The contract and adapter config are in `src/lib/map/accessContract.ts`; the spec is under "To Owner C … access-detail endpoint" in `docs/OWNER_B_REQUESTS.md`; the sample is `docs/samples/access_features_v1.json`.
+- **Files:** `src/lib/map/{accessContract,accessClient,osmAccess}.ts`, `MapView3D.tsx`, `globals.css`, `public/data/downtown-access.geojson`, `tests/ui/accessContract.test.ts`.
+- **Tests:** `npm run test:ui` 107 pass; typecheck and build clean. Not yet checked visually in a browser.
+
+## Owner B — Downtown 3D map (2026-11-14)
+- **Outcome:** MapLibre GL map is now the default (Leaflet 2D kept at `?map=2d`). Flat by default; a "3D view" button tilts it, showing extruded buildings (OpenFreeMap/OSM `render_height`) and stairways drawn as rising step blocks (illustrative, not measured). Toggleable "Map details" layer: sidewalks, crosswalks, crossings (thicker ring = tactile paving), curb ramps (▼ lowered / ▲ raised / ? unknown, shape + color), stairs, elevators. Clicking a context feature shows its OSM tags (labelled community-mapped, unverified). The map is bounded to `STUDY_BBOX`; colors come from `--map-*` CSS tokens.
+- **Data:** `public/data/downtown-access.geojson`, an Overpass snapshot (4,110 features: 66 steps, 541 lowered kerbs, 1,373 crossings, 2 elevators; 1.4 MB, ~100 KB gzip). Refresh: `npx tsx scripts/osm/fetch-downtown.ts`.
+- **Files:** `src/components/MapView3D.tsx`, `src/lib/map/{osmAccess,extrude}.ts`, `scripts/osm/fetch-downtown.ts`, `page.tsx`, `layout.tsx`, `globals.css`, `tests/ui/{osmAccess,extrude}.test.ts`. New dependency: `maplibre-gl@4.7.1`.
+- **Tests:** `npm run test:ui` 96 pass; typecheck and build clean. Not yet checked visually in a browser.
+- **Not done:** no satellite imagery. Building footprints come from OSM, not from our own imagery analysis.
+
+## Owner B — Owner C UI shells (2026-11-14)
+- **Outcome:** Shells for C's features, all optional; failures never block the map or routing. Collapsible "Construction news" panel (GET /api/notices, loads on open, empty state, a "Show on map" button only when observation_id is set). "Report with a photo" form (POST /api/analyze-image: permission checkbox, 5 MB check, optional camera lat/lon; results labelled AI candidate, unverified; refetches barriers when saved). "Explain evidence" and "Read aloud" buttons on a record call /api/investigate and /api/speak and hide themselves on 404 (both 404 today). `upload:` sources render as "Participant upload (no public link)".
+- **Files:** `src/lib/ui/evidenceClient.ts`, `src/components/{NoticesPanel,PhotoReport,EvidenceActions}.tsx`, `BarrierDetail.tsx`, `page.tsx`, `globals.css`, `tests/ui/evidenceClient.test.ts`.
+- **Tests:** `npm run test:ui` 69 pass; `npm test` 196 pass; typecheck and build clean.
 ## Owner C — Vultr deploy (2026-11-14)
 - **Live:** https://140-82-17-18.sslip.io — full app on Vultr `vc2-1c-1gb` (lax), Caddy TLS, Neon data. Redeploy: `scripts/deploy/vultr-deploy.sh 140.82.17.18` (needs `~/.ssh/accesspath_vultr`, Aidan's machine). Server env = Gemini + ElevenLabs + DATABASE_URL only.
 - `/api/investigate` now retries once on malformed structured output (seen 1/6 live). `npm test` 233 pass + 1 todo.

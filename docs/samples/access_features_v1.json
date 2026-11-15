@@ -1,0 +1,56 @@
+{
+  "data": [
+    {
+      "type": "Feature",
+      "id": "c-slope-0001",
+      "geometry": { "type": "LineString", "coordinates": [[-117.1612, 32.7155], [-117.1606, 32.7155]] },
+      "properties": {
+        "kind": "slope_segment",
+        "detail": { "slope_pct": 7.4, "cross_slope_pct": 2.1, "width_m": 1.5, "surface": "concrete", "surface_condition": "fair" },
+        "provenance": {
+          "source": "Gemini estimate from permitted street imagery + USGS elevation",
+          "source_url": null,
+          "source_date": "2026-11-14",
+          "method": "ai_estimate",
+          "verification_status": "ai_candidate",
+          "confidence": "low",
+          "note": "Slope estimated from elevation difference over segment length; not measured on site."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "c-curbramp-0002",
+      "geometry": { "type": "Point", "coordinates": [-117.1601, 32.7149] },
+      "properties": {
+        "kind": "curb_ramp",
+        "slope_ratio": 0.081,
+        "width_in": 48,
+        "detectable_warning": true,
+        "source_name": "SAMPLE official curb-ramp dataset (placeholder)",
+        "source_url": "https://example.org/sample-curb-ramp-record",
+        "captured_at": "2024-06-30",
+        "method": "official_dataset",
+        "verification_status": "official_inventory",
+        "confidence": "high"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/123456789",
+      "geometry": { "type": "LineString", "coordinates": [[-117.1590, 32.7160], [-117.1590, 32.7166]] },
+      "properties": {
+        "kind": "sidewalk",
+        "detail": { "slope_pct": null, "surface": "brick" },
+        "provenance": { "source": "Owner C enrichment of OSM way", "method": "unknown", "verification_status": "unknown", "confidence": "unknown" }
+      }
+    }
+  ],
+  "meta": {
+    "contract_version": "1",
+    "count": 3,
+    "data_mode": "sample",
+    "generated_at": "2026-11-14T18:00:00Z",
+    "source_note": "Illustrative sample for the contract only. Values are invented placeholders, not real measurements."
+  }
+}

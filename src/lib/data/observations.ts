@@ -58,36 +58,56 @@ export async function listObservations(opts: { bbox: Bbox; categories?: Category
   let matched: BarrierObservation[] = [];
   let dataMode: ListResult['data_mode'] = 'live_import';
 
+  const after = parseCursor(cursor);
   if (sql) {
-    let after = cursor ?? '';
-    const batch = limit + 1;
-    for (let guard = 0; guard < 20 && matched.length < limit + 1; guard++) {
-      const rows = (await sql(
-        `SELECT * FROM barrier_observations
+    const rows = (await sql(
+      `SELECT * FROM (
+         SELECT *, ${RANK_SQL} AS src_rank FROM barrier_observations
          WHERE geom && ST_MakeEnvelope($1,$2,$3,$4,4326) AND ST_Intersects(geom, ST_MakeEnvelope($1,$2,$3,$4,4326))
            AND ${CURRENT_SQL}
            AND ($5::text[] IS NULL OR category = ANY($5::text[]))
-           AND id > $6
-         ORDER BY id LIMIT $7`,
-        [bbox[0], bbox[1], bbox[2], bbox[3], categories && categories.length ? categories : null, after, batch],
-      )) as any[];
-      for (const r of rows) matched.push(rowToObs(r));
-      if (matched.length >= limit + 1) break;
-      if (rows.length < batch) break;
-      after = rows[rows.length - 1].id;
-    }
+       ) t
+       WHERE (src_rank, id) > ($6::int, $7::text)
+       ORDER BY src_rank, id LIMIT $8`,
+      [bbox[0], bbox[1], bbox[2], bbox[3], categories && categories.length ? categories : null, after.rank, after.id, limit + 1],
+    )) as any[];
+    matched = rows.map(rowToObs);
   } else {
     const s = readStore();
     dataMode = s.data_mode;
     matched = s.observations
-      .filter((o) => isCurrent(o) && (!cursor || o.id > cursor) && (!categories?.length || categories.includes(o.category)) && intersectsBbox(o.geometry, bbox))
-      .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+      .filter((o) => isCurrent(o) && compareKey(o, after) > 0 && (!categories?.length || categories.includes(o.category)) && intersectsBbox(o.geometry, bbox))
+      .sort((a, b) => compareKey(a, { rank: sourceRank(b.source_kind), id: b.id }));
   }
 
   const page = matched.slice(0, limit);
   const res: ListResult = { data: page, data_mode: dataMode };
-  if (matched.length > limit) res.next_cursor = page[page.length - 1].id;
+  if (matched.length > limit) {
+    const last = page[page.length - 1];
+    res.next_cursor = `${sourceRank(last.source_kind)}|${last.id}`;
+  }
   return res;
+}
+
+/*
+ * Page order: official records first, then AI/web candidates, then 311 reports.
+ * Sorting by id alone put every `city_311:*` record before `city_gis:*` / `traffic_control:*`,
+ * so a client reading only the first page saw no ramps or permits.
+ */
+const SOURCE_RANK: Record<string, number> = { city_gis: 0, county_gis: 0, traffic_control: 1, web_notice: 2, street_imagery_ai: 2, community_report: 3, city_311: 4 };
+export function sourceRank(kind: string): number { return SOURCE_RANK[kind] ?? 5; }
+const RANK_SQL = `CASE source_kind ${Object.entries(SOURCE_RANK).map(([k, r]) => `WHEN '${k}' THEN ${r}`).join(' ')} ELSE 5 END`;
+
+/** Cursor is `<rank>|<id>`. A bare id (old format) derives its rank from the id's source prefix. */
+function parseCursor(cursor?: string): { rank: number; id: string } {
+  if (!cursor) return { rank: -1, id: '' };
+  const bar = cursor.indexOf('|');
+  if (bar > 0 && /^\d+$/.test(cursor.slice(0, bar))) return { rank: Number(cursor.slice(0, bar)), id: cursor.slice(bar + 1) };
+  return { rank: sourceRank(cursor.split(':')[0]), id: cursor };
+}
+function compareKey(o: BarrierObservation, k: { rank: number; id: string }): number {
+  const r = sourceRank(o.source_kind) - k.rank;
+  return r !== 0 ? r : o.id < k.id ? -1 : o.id > k.id ? 1 : 0;
 }
 
 /** Hidden from reads: records marked outdated, and traffic permits whose end date has passed. */
