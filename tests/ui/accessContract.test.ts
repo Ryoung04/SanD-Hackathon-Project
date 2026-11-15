@@ -107,3 +107,14 @@ test("fetchAccessFeatures: 404 is NOT_DEPLOYED; sample body parses; version mism
   const net = await fetchAccessFeatures([0, 0, 1, 1], (async () => { throw new Error("offline"); }) as unknown as typeof fetch);
   assert.equal(net.ok, false);
 });
+
+test("derived DEM slope feature: origin derived, rise_m kept, inferred = estimated", () => {
+  const f = normalizeAccessFeature({ type: "Feature", id: "dem/way/1/0", geometry: { type: "LineString", coordinates: [[0, 0], [0.0002, 0]] },
+    properties: { kind: "slope_segment", slope_pct: 14.2, rise_m: 2.8, method: "inferred", confidence: "medium", source: "USGS 3DEP" } }, "x", "derived")!;
+  assert.equal(f.properties.origin, "derived");
+  assert.equal(f.properties.detail.rise_m, 2.8);
+  const m = toMapProps(f);
+  assert.equal(m.slope_band, "very_steep");
+  assert.equal(m.estimated, 1);
+  assert.equal(m.slope_label, "~14.2%");
+});

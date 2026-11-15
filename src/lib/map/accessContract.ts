@@ -84,6 +84,7 @@ export const FIELD_ALIASES: Record<string, Alias[]> = {
   width_m: ["width_m", "clear_width_m", ["width_cm", 0.01], ["width_in", 0.0254], ["width_ft", 0.3048]],
   kerb_height_cm: ["kerb_height_cm", "curb_height_cm", ["curb_height_in", 2.54], ["kerb_height_m", 100]],
   step_count: ["step_count", "steps"],
+  rise_m: ["rise_m", "height_change_m", ["rise_cm", 0.01], ["rise_ft", 0.3048]],
   surface: ["surface", "surface_type"],
   surface_condition: ["surface_condition", "condition"],
   ramp_type: ["ramp_type"],
@@ -126,6 +127,8 @@ export interface AccessDetail {
   width_m: number | null;
   kerb_height_cm: number | null;
   step_count: number | null;
+  /** Height change along the feature (m), e.g. a stair's total rise. Estimate unless method says otherwise. */
+  rise_m: number | null;
   surface: string | null;
   surface_condition: SurfaceCondition;
   ramp_type: RampType;
@@ -147,11 +150,14 @@ export interface AccessProvenance {
   note: string | null;
 }
 
+/** Where a feature entered the map: OSM snapshot, Owner C's API, or a B-derived static file (e.g. DEM slopes). */
+export type AccessOrigin = "osm_snapshot" | "api" | "derived";
+
 export interface AccessFeatureV1 {
   type: "Feature";
   id: string;
   geometry: { type: "Point"; coordinates: [number, number] } | { type: "LineString"; coordinates: [number, number][] };
-  properties: { kind: AccessKindV1; detail: AccessDetail; provenance: AccessProvenance; origin: "osm_snapshot" | "api" };
+  properties: { kind: AccessKindV1; detail: AccessDetail; provenance: AccessProvenance; origin: AccessOrigin };
 }
 
 // ---------------------------------------------------------------------------
@@ -207,7 +213,7 @@ function pick(bag: Record<string, unknown>, field: string): unknown {
  * Normalize one raw GeoJSON Feature from Owner C's endpoint (or any future source).
  * Returns null for unusable geometry. Tolerant of flat or nested (detail/provenance) props.
  */
-export function normalizeAccessFeature(raw: any, fallbackId: string): AccessFeatureV1 | null {
+export function normalizeAccessFeature(raw: any, fallbackId: string, origin: AccessOrigin = "api"): AccessFeatureV1 | null {
   const g = raw?.geometry;
   const okPoint = g?.type === "Point" && Array.isArray(g.coordinates) && g.coordinates.length >= 2 && g.coordinates.every(Number.isFinite);
   const okLine = g?.type === "LineString" && Array.isArray(g.coordinates) && g.coordinates.length >= 2;
@@ -230,6 +236,7 @@ export function normalizeAccessFeature(raw: any, fallbackId: string): AccessFeat
     width_m: num(pick(bag, "width_m")),
     kerb_height_cm: num(pick(bag, "kerb_height_cm")),
     step_count: num(pick(bag, "step_count")),
+    rise_m: num(pick(bag, "rise_m")),
     surface: str(pick(bag, "surface")),
     surface_condition: oneOf(SURFACE_CONDITIONS, pick(bag, "surface_condition"), "unknown"),
     ramp_type: oneOf(RAMP_TYPES, pick(bag, "ramp_type"), kind === "curb_ramp" ? "curb_ramp" : "unknown"),
@@ -250,7 +257,7 @@ export function normalizeAccessFeature(raw: any, fallbackId: string): AccessFeat
     note: str(pick(bag, "note")),
   };
   const id = String(raw.id ?? p.id ?? fallbackId);
-  return { type: "Feature", id, geometry: g, properties: { kind, detail, provenance, origin: "api" } };
+  return { type: "Feature", id, geometry: g, properties: { kind, detail, provenance, origin } };
 }
 
 /** Adapter for the static OSM snapshot (osmAccess.ts output). OSM = community_tag / unverified_report. */
@@ -267,7 +274,7 @@ export function fromOsm(f: OsmFeature, retrievedAt: string | null): AccessFeatur
       detail: {
         slope_pct: parseIncline(p.incline),
         cross_slope_pct: null, width_m: p.width_m ?? null, kerb_height_cm: null,
-        step_count: p.step_count, surface: p.surface, surface_condition: "unknown",
+        step_count: p.step_count, rise_m: null, surface: p.surface, surface_condition: "unknown",
         ramp_type: p.ramp_type ?? (p.kind === "kerb_lowered" ? "curb_ramp" : "unknown"),
         handrail: p.handrail, landing: "unknown", tactile_paving: p.tactile_paving,
         wheelchair: p.wheelchair, signals: p.signals, incline_raw: p.incline,

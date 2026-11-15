@@ -19,14 +19,20 @@ interface Props {
   /** When true, the next map click is reported via onPick. */
   picking?: boolean;
   onPick?: (p: LatLon) => void;
+  /** Pan request [lon, lat] from the route panel; seq changes on every request. */
+  focus?: { at: [number, number]; seq: number } | null;
 }
 
 /** Leaflet map. Loaded client-only; all observation text is set via textContent / aria, never innerHTML from data. */
-export default function MapView({ observations, selectedId, onSelect, onBoundsChange, route, start, end, picking, onPick }: Props) {
+export default function MapView({ observations, selectedId, onSelect, onBoundsChange, route, start, end, picking, onPick, focus }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<LMap | null>(null);
   const layer = useRef<LayerGroup | null>(null);
   const routeLayer = useRef<LayerGroup | null>(null);
+  useEffect(() => {
+    if (focus && map.current) map.current.setView([focus.at[1], focus.at[0]], Math.max(map.current.getZoom(), 18));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus?.seq]);
   const [ready, setReady] = useState(false);
   const L = useRef<typeof import("leaflet") | null>(null);
   const cbs = useRef({ onSelect, onBoundsChange, onPick, picking });

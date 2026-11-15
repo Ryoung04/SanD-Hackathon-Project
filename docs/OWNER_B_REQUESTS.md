@@ -27,6 +27,12 @@ B is building against shells until these come in. Replace each shell, then tick 
 The map is ready now. Until this endpoint exists it shows the OSM snapshot only; a 404 changes nothing.
 B owns the contract, which is in **`src/lib/map/accessContract.ts`**. The sample payload is `docs/samples/access_features_v1.json`, tested in `tests/ui/accessContract.test.ts`.
 
+**Already covered by B (don't duplicate):** path-level running slope from USGS 3DEP 1 m lidar.
+- `public/data/downtown-slopes.geojson` is built by `scripts/elevation/fetch-slopes.ts`; features are `kind: "slope_segment"`, `method: "inferred"`, ids `dem/<osm id>/<n>`.
+- Stair height changes (`rise_m`) are also covered.
+- C's feed adds most value with what elevation can't give: curb-ramp slope and flare, cross slope, width, surface condition, landings, and confirmation of "possibly unmapped stairs" spots (>12%).
+- Reuse a `dem/...` id to replace one of B's estimates with a better value.
+
 **Endpoint:** `GET /api/access-features?bbox=west,south,east,north` (the map requests `STUDY_BBOX`).
 - Another path: set `NEXT_PUBLIC_ACCESS_FEATURES_URL` or edit `ACCESS_FEATURES_URL` in `src/lib/map/accessClient.ts`.
 - Next.js route files may export only handlers and config. Put helpers in `src/lib/`.

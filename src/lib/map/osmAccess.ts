@@ -26,6 +26,8 @@ export interface AccessProps {
   width_m?: number | null; // OSM width tag (metres), unverified
   ramp_type?: "curb_ramp" | "building_ramp" | "path_ramp" | "stair_ramp" | "unknown";
   reason?: string; // why an inferred candidate exists
+  /** Raised/sunken/indoor path: ground elevation data does not describe it (skipped for slope). */
+  structure?: "bridge" | "tunnel" | "covered" | "indoor" | null;
   name: string | null;
 }
 
@@ -93,6 +95,7 @@ function props(kind: AccessKind, osm_id: string, t: Tags): AccessProps {
     incline: t.incline ?? null,
     width_m: Number.isFinite(parseFloat(t.width ?? "")) ? parseFloat(t.width!) : null,
     ramp_type: rampType(kind, t),
+    structure: t.bridge && t.bridge !== "no" ? "bridge" : t.tunnel && t.tunnel !== "no" ? "tunnel" : t.indoor === "yes" ? "indoor" : t.covered === "yes" ? "covered" : (Number(t.layer) || 0) !== 0 ? "bridge" : null,
     name: t.name ?? null,
   };
 }
