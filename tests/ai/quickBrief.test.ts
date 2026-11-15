@@ -42,6 +42,20 @@ describe("buildQuickBrief", () => {
     expect(buildQuickBrief(none, [], photo("visibly_present")).conflicts).toHaveLength(1);
     expect(buildQuickBrief(ramp, [], photo("not_visible")).uncertainties.join(" ")).toMatch(/may still exist/);
   });
+  it("summarizes multi-photo votes, links decisive photos, flags more ramps than the city lists", () => {
+    const p = { ...photo("visibly_present"), photo_votes: {
+      total: 5, visible: 3, not_visible: 0, cant_tell: 2, ramps_seen_max: 3, no_ramp_corners_max: 0, years: ["2024", "2025"] as [string, string],
+      photos: [
+        { page_url: "https://www.mapillary.com/app/?pKey=a", captured_at: "2024-12-16", pano: true, verdict: "visible" as const },
+        { page_url: "https://www.mapillary.com/app/?pKey=b", captured_at: "2025-01-01", pano: false, verdict: "cant_tell" as const },
+      ] } };
+    const b = buildQuickBrief(ramp, [], p);
+    expect(b.summary).toContain("Of 5 street photos near this intersection (2024–2025), 3 show at least one curb ramp, 2 are inconclusive");
+    expect(b.source_links).toContain("https://www.mapillary.com/app/?pKey=a");
+    expect(b.source_links).not.toContain("https://www.mapillary.com/app/?pKey=b");
+    expect(b.conflicts[0]).toMatch(/shows 3 ramps in one view, but the city inventory lists 2 existing/);
+    expect(noForbiddenClaim(b.summary)).toBe(true);
+  });
   it("never makes a forbidden accessibility claim", () => {
     for (const p of [null, photo("visibly_present"), photo("not_visible"), photo("not_determinable")]) {
       const b = buildQuickBrief(ramp, near, p);

@@ -1,0 +1,32 @@
+q041	cant_tell	0	0	clear	-	sidewalk corner, red brick paving, no crosswalk or ramp visible
+q043	cant_tell	0	0	cant_tell	-	corner building, bins at edges, crosswalk only partly visible
+q044	cant_tell	0	0	cant_tell	-	corner building, bins at edges, crosswalk only partly visible
+q046	cant_tell	0	0	clear	-	driving view, tree-lined street, no crosswalk corner visible
+q047	cant_tell	0	0	clear	-	white SUV at curb, no crosswalk or ramp visible
+q048	cant_tell	0	0	clear	-	street view, parked cars at curb, no ramp visible
+q049	cant_tell	0	0	clear	-	driving view, pedestrians on far sidewalk, no ramp visible
+q051	cant_tell	0	0	obstructed	construction fence	construction fence along sidewalk, cones, concrete truck
+q052	cant_tell	0	0	obstructed	construction fence	job-site fencing and signs on sidewalk, cones
+q053	cant_tell	0	0	obstructed	construction fence	construction fence along sidewalk, cones, concrete truck
+q054	cant_tell	0	0	obstructed	construction fence	construction fence along left sidewalk, cones, crosswalk beyond
+q056	cant_tell	0	0	clear	-	minivan at curb, pedestrian and dog on sidewalk
+q057	cant_tell	0	0	clear	-	parking lot with parked cars, no sidewalk corner
+q058	cant_tell	0	0	clear	-	minivan at curb, pedestrian and dog on sidewalk
+q059	cant_tell	0	0	clear	-	street view, parked cars at curb, no ramp visible
+q060	cant_tell	0	0	clear	-	white van in street, sidewalk clear, no ramp visible
+q061	cant_tell	0	0	clear	-	corner with Beech St sign, pole at curb, no crosswalk
+q062	cant_tell	0	0	clear	-	cars parked at curb, sidewalk corner, no ramp visible
+q063	cant_tell	0	0	obstructed	construction fence	green construction fence along sidewalk edge, no crosswalk
+q065	cant_tell	0	0	clear	-	crosswalk clearly visible, corner ramp not clearly visible
+q066	cant_tell	0	0	clear	-	corner with hydrant and bus shelter, crosswalk partly visible
+q067	cant_tell	0	0	cant_tell	-	windshield view, orange barrier at far end, glare
+q068	cant_tell	0	0	clear	-	corner with bus shelter, cars at curb, no ramp visible
+q070	cant_tell	0	0	cant_tell	-	chain-link fence along left edge, no ramp visible
+q071	cant_tell	0	0	cant_tell	-	intersection, chain-link fence on right sidewalk
+q073	cant_tell	0	0	clear	-	planter at curb, parked van, no crosswalk visible
+q074	cant_tell	0	0	clear	-	parked SUV at curb, no crosswalk or ramp visible
+q075	cant_tell	0	0	clear	-	corner with yellow hydrant at curb, no ramp visible
+q076	cant_tell	0	0	clear	-	yellow hydrant at curb, shrubs, no crosswalk visible
+q078	visible	1	0	clear	-	yellow detectable pad at right corner, pink building, pole at curb
+q079	cant_tell	0	0	clear	-	parked Jeep at curb, planter at corner, no ramp visible
+q080	visible	1	0	clear	-	yellow detectable pad at right corner, pink building, pole at curb

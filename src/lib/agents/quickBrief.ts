@@ -89,7 +89,23 @@ export function buildQuickBrief(barrier: BarrierObservation, around: BarrierObse
   if (permits.length && barrier.source_kind !== "traffic_control") uncertainties.push("Nearby permits do not confirm that any sidewalk is closed.");
 
   const links: string[] = [];
-  if (photo?.status === "analyzed" && photo.image) {
+  const v = photo?.status === "analyzed" ? photo.photo_votes : undefined;
+  if (v && v.total > 0) {
+    const yrs = v.years ? (v.years[0] === v.years[1] ? ` (${v.years[0]})` : ` (${v.years[0]}–${v.years[1]})`) : "";
+    const bits = [
+      v.visible && `${v.visible} show${v.visible === 1 ? "s" : ""} at least one curb ramp`,
+      v.not_visible && `${v.not_visible} show${v.not_visible === 1 ? "s" : ""} a crossing corner without a ramp`,
+      v.cant_tell && `${v.cant_tell} ${v.cant_tell === 1 ? "is" : "are"} inconclusive`,
+    ].filter(Boolean);
+    sentences.push(`Of ${v.total} street photo${v.total === 1 ? "" : "s"} near this intersection${yrs}, ${bits.join(", ")} (AI readings, unverified).`);
+    const decisive = v.photos.filter((p) => p.verdict !== "cant_tell").slice(0, 2);
+    for (const p of decisive.length ? decisive : v.photos.slice(0, 1)) links.push(p.page_url);
+    const existing = m(barrier, "RAMPS_EXISTING");
+    if (barrier.source_kind === "city_gis" && typeof existing === "number" && v.ramps_seen_max > existing)
+      conflicts.push(`A street photo shows ${v.ramps_seen_max} ramp${v.ramps_seen_max === 1 ? "" : "s"} in one view, but the city inventory lists ${existing} existing; a ramp may have been added since, or the photo shows a neighboring corner.`);
+    if (!v.visible && !v.not_visible) uncertainties.push("No photo clearly shows the corners of this intersection.");
+    else uncertainties.push("Photos cannot show which specific corner the city's missing ramp is on.");
+  } else if (photo?.status === "analyzed" && photo.image) {
     const seen =
       photo.curb_ramp_visibility === "visibly_present" ? "shows at least one curb ramp"
       : photo.curb_ramp_visibility === "not_visible" ? "shows a corner without a visible curb ramp"

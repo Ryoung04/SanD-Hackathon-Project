@@ -1,5 +1,9 @@
 # Progress
 
+## Owner C — multi-photo intersection review (2026-11-14 night)
+- 40 demo intersections (32 downtown core + 8 Golden Hill): 154 Mapillary photos incl. 32 panoramas (tiled). Blind Claude-Haiku subagent review. 20/38 intersections now have photo evidence of ≥1 ramp; negatives not trusted. 11 obstruction ai_candidates. Quick brief reports "Of N photos, K show a curb ramp" + flags conflicts when photos show more ramps than the city lists.
+- Repro: `npm run ai:photo-prep -- <dir>` → reviewers → `node scripts/ai/merge-pano-tiles.js <dir>` → `npm run ai:import-review -- <dir>/manifest.json <tsvs> --save`.
+
 ## Owner C — reliable briefs + imagery review (2026-11-14 evening)
 - Gemini free tier can't sustain runtime agent calls (3.5-flash quota exhausted; flash-lite hangs → 45 s timeouts). Fix: `/api/investigate` defaults to an instant rule-based brief (`src/lib/agents/quickBrief.ts`, 0.1–0.4 s live); Mastra agent is opt-in `mode:"agent"` (step limit 10, aborted→TIMEOUT, long text trimmed).
 - Imagery: `src/lib/ai/{mapillary,imageryChecks,imageryPipeline}.ts`, `npm run ai:imagery`, `npm run ai:import-review`. Mapillary photos for 88 ramp intersections; Gemini pass was noisy → quality gate (`candidateGate`) → replaced by blind Claude-Haiku subagent review (70 photos): 1 ramp visible, 69 can't tell, 3 obstructions. Neon: 3 current street_imagery_ai, 68 marked outdated.

@@ -31,6 +31,10 @@
 ## Claude (via Claude Code subagents) — blind photo review
 - Same 70 photos, shrunk to 640 px, reviewed blind (no city data shown) by two Claude Haiku subagents (~59k tokens each, ~90 s). Verdicts: ramp visible 1, can't tell 69 (side-facing dashcam shots rarely show the corner); 3 sidewalk obstructions (construction fence/cones, dumpsters). Two spot-checked by hand. Files: `docs/samples/photo_review/`. Stored as `ai_candidate` with `model` = reviewer label. This is AI review, not human verification.
 
+### Round 2 — multi-photo review (40 demo intersections)
+- `npm run ai:photo-prep`: up to 4 facing photos per intersection (distinct capture sequences/approach quadrants) + 1 panorama → 154 photos; panoramas re-fetched at 2048 px and split into 4 street-level tiles (128 tiles, `scripts/ai/merge-pano-tiles.js`).
+- 5 Claude Haiku subagents (~60–110k tokens each). Result: **20 of 38 intersections have ≥1 photo showing a curb ramp** (was 1 of 70), 18 inconclusive, 11 sidewalk-obstruction candidates (mostly construction fencing). Negative "no ramp" verdicts were spot-checked, found unreliable (1 of 2 wrong), and downgraded to inconclusive: photos confirm presence only. Files: `docs/samples/photo_review_v2/`.
+
 ## Vultr — hosts the full web app
 - Instance `accesspath-sd-demo`: `vc2-1c-1gb` (1 vCPU / 1 GB, $5/mo), region `lax`, Ubuntu 24.04, created 2026-11-14 via Vultr API. Backups off, ufw 22/80/443 only.
 - Runs: the whole Next.js app (map UI + `/api/barriers`, `/api/route`, `/api/notices`, `/api/investigate`, `/api/speak`) as systemd service under a non-root user, behind Caddy with Let's Encrypt TLS.

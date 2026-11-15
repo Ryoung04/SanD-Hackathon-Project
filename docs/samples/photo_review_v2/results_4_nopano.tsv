@@ -1,0 +1,23 @@
+q121	cant_tell	0	0	clear	-	fence, dirt slope, trees; no crosswalk corner visible
+q122	cant_tell	0	0	clear	-	road curve, sidewalk right, lamp poles; no crosswalk visible
+q124	visible	1	0	clear	-	yellow warning pad at corner center; crosswalk ahead; parked cars
+q125	cant_tell	0	0	clear	-	bridge railing and walkway; no street corner visible
+q126	cant_tell	0	0	clear	-	crosswalk in foreground; corner ramps not clearly visible
+q128	cant_tell	0	0	clear	-	residential street, houses, parked cars; no crosswalk
+q130	cant_tell	0	0	clear	-	residential street; parked white car; no crosswalk visible
+q131	cant_tell	0	0	cant_tell	-	parked white car; fence; sidewalk not clearly visible
+q132	cant_tell	0	0	clear	-	residential corner; palm trees; parked car at curb
+q134	cant_tell	0	0	clear	-	red-painted curb, sign and lamp on dirt; no crosswalk
+q135	cant_tell	0	0	cant_tell	-	rain, cars in road; no sidewalk or corner visible
+q137	cant_tell	0	0	clear	-	residential street; parked trucks and cars; no crosswalk
+q138	cant_tell	0	0	clear	-	white car parked at curb; sidewalk left; no crosswalk
+q139	cant_tell	0	0	clear	-	corner; green bin at planter edge; no crosswalk visible
+q141	cant_tell	0	0	clear	-	red-painted curb, lamp post, tree; no crosswalk visible
+q142	cant_tell	0	0	cant_tell	-	curving road; dirt shoulder, barricade; no sidewalk visible
+q143	cant_tell	0	0	clear	-	intersection, parked cars; no crosswalk or ramp visible
+q144	cant_tell	0	0	cant_tell	-	nighttime; pickup in road; no corner visible
+q146	cant_tell	0	0	clear	-	building corner; motorcycle at curb edge; no crosswalk
+q148	cant_tell	0	0	cant_tell	-	parked cars on street; no sidewalk or corner visible
+q149	cant_tell	0	0	clear	-	corner; utility pole at curb edge; no crosswalk
+q152	cant_tell	0	0	cant_tell	-	retaining wall, stairs, building; no street corner
+q153	cant_tell	0	0	clear	-	curb corner with red paint; house; no crosswalk

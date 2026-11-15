@@ -1,0 +1,34 @@
+q001	visible	1	0	clear	-	yellow pad at curb corner, pedestrians on sidewalk
+q002	visible	2	0	clear	-	two yellow pads at corners, stroller on sidewalk
+q003	cant_tell	0	0	obstructed	construction fence barricades	blue fence and red barricades along sidewalk edge
+q004	visible	1	0	clear	-	yellow pad at curb, pedestrian walking, truck at right
+q006	cant_tell	0	0	clear	-	parked car at curb, no crosswalk corner clear
+q007	cant_tell	0	0	cant_tell	-	UPS van at corner, curb edge unclear
+q008	cant_tell	0	0	clear	-	corner curb in view, no ramp detail visible
+q009	cant_tell	0	0	clear	-	white car in road, no crosswalk corner clear
+q011	cant_tell	0	0	clear	-	parked cars at curb, no clear crosswalk corner
+q012	cant_tell	0	0	clear	-	street sign pole at curb, no ramp visible
+q013	cant_tell	0	0	clear	-	corner with hydrant at curb, no ramp visible
+q014	cant_tell	0	0	clear	-	building entrance, no crosswalk corner clear
+q016	cant_tell	0	0	clear	-	parked car at corner, no crosswalk visible
+q017	cant_tell	0	0	clear	-	road view, crosswalk lines, no ramp detail
+q018	cant_tell	0	0	clear	-	parked car at curb, no crosswalk corner clear
+q019	cant_tell	0	0	cant_tell	-	orange construction sign and cones at corner
+q021	cant_tell	0	0	clear	-	panorama, corner with trash bin, ramp unclear
+q022	cant_tell	0	0	clear	-	white van at curb, corner ramp not clear
+q023	cant_tell	0	0	clear	-	road view, sidewalk curb, no ramp visible
+q024	cant_tell	0	0	clear	-	road view, crosswalk lines, corners not clear
+q026	cant_tell	0	0	obstructed	sidewalk shed	red construction shed along sidewalk, person walking
+q027	cant_tell	0	0	obstructed	construction fence cones	green fence and cones on sidewalk
+q028	cant_tell	0	0	clear	-	parked cars, cones at curb edge
+q029	cant_tell	0	0	obstructed	construction fence	green fence along sidewalk at construction site
+q030	cant_tell	0	0	clear	-	road view, hydrant on sidewalk, no ramp visible
+q031	cant_tell	0	0	clear	-	SUV parked at corner curb, ramp unclear
+q032	cant_tell	0	0	clear	-	car parked at curb, corner ramp not clear
+q033	cant_tell	0	0	clear	-	road view, pedestrians on sidewalk, no ramp visible
+q035	cant_tell	0	0	clear	-	road view, no sidewalk corner ramp clear
+q036	cant_tell	0	0	cant_tell	-	windshield view, sidewalk not visible
+q037	cant_tell	0	0	cant_tell	-	windshield view, sidewalk not visible
+q038	cant_tell	0	0	clear	-	sidewalk by fenced lot, no ramp visible
+q039	cant_tell	0	0	clear	-	sidewalk with lamp post, no ramp visible
+q040	visible	1	0	clear	-	yellow pads at crosswalk corner, bollards on sidewalk

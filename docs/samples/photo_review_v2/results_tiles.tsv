@@ -1,0 +1,128 @@
+q005t0	cant_tell	0	0	cant_tell	-	blue construction fence behind; sidewalk not clearly blocked
+q005t1	visible	1	0	clear	-	yellow pad at right corner by crosswalk
+q005t2	cant_tell	0	0	clear	-	crosswalk in foreground; corner ramps unclear
+q005t3	visible	1	0	clear	-	yellow pad at left curb near crosswalk
+q010t0	cant_tell	0	0	clear	-	no crosswalk or ramp in view
+q010t1	not_visible	0	1	clear	-	crosswalk corner at left; no pad visible
+q010t2	visible	1	0	clear	-	yellow pad at curb corner by crosswalk
+q010t3	cant_tell	0	0	clear	-	parked car at curb; no crosswalk in view
+q015t0	cant_tell	0	0	clear	-	parked cars at curb; no crosswalk
+q015t1	cant_tell	0	0	clear	-	hydrant at curb; no crosswalk clear
+q015t2	cant_tell	0	0	clear	-	no crosswalk or ramp in view
+q015t3	cant_tell	0	0	clear	-	faint road marks; no clear ramp
+q020t0	cant_tell	0	0	cant_tell	-	cone and A-frame sign near curb; not clearly blocking
+q020t1	cant_tell	0	0	clear	-	crosswalk visible; corner ramp unclear
+q020t2	cant_tell	0	0	clear	-	crosswalk at left; corner pad not clear
+q020t3	cant_tell	0	0	clear	-	parked silver car at curb; no crosswalk
+q025t0	cant_tell	0	0	clear	-	van parked in road; no crosswalk
+q025t1	cant_tell	0	0	clear	-	yellow painted crosswalk; no clear pad
+q025t2	cant_tell	0	0	clear	-	yellow painted crosswalk; corner pad unclear
+q025t3	not_visible	0	1	clear	-	crosswalk meets red-curb corner; no pad visible
+q034t0	cant_tell	0	0	clear	-	crosswalk visible; corner mark unclear
+q034t1	cant_tell	0	0	clear	-	no crosswalk; yellow curb paint only
+q034t2	cant_tell	0	0	clear	-	no crosswalk in view; sidewalk clear
+q034t3	cant_tell	0	0	clear	-	brown patch on sidewalk; not clearly a pad
+q042t0	cant_tell	0	0	clear	-	bike marking on road; no crosswalk or pad
+q042t1	cant_tell	0	0	clear	-	white truck in parking area; no crosswalk
+q042t2	cant_tell	0	0	clear	-	trash can at curb; no clear pad
+q042t3	cant_tell	0	0	clear	-	red curb corner; no crosswalk or pad
+q045t0	cant_tell	0	0	clear	-	bike lane; no crosswalk or ramp in view
+q045t1	cant_tell	0	0	clear	-	green bike lane; no crosswalk in view
+q045t2	visible	1	0	clear	-	yellow pad at right corner by crosswalk
+q045t3	cant_tell	0	0	obstructed	blue wheeled trash bins	bins on sidewalk narrow corner path
+q050t0	cant_tell	0	0	clear	-	painted wheelchair symbol on road; no crosswalk
+q050t1	cant_tell	0	0	clear	-	no crosswalk; planters along sidewalk
+q050t2	visible	1	0	clear	-	yellow pad at corner beside planter
+q050t3	cant_tell	0	0	cant_tell	-	SUV at curb cut; sidewalk position unclear
+q055t0	visible	1	0	cant_tell	-	yellow pad at right corner; cones near sidewalk
+q055t1	cant_tell	0	0	clear	-	crosswalk visible; no clear pad at corners
+q055t2	cant_tell	0	0	obstructed	construction fence	construction fence along sidewalk; steel plate in road
+q055t3	visible	1	0	clear	-	yellow pad at upper-left curb near crosswalk
+q064t0	cant_tell	0	0	clear	-	cones and parked vehicles in road
+q064t1	cant_tell	0	0	clear	-	parked trucks and cones in road; no crosswalk
+q064t2	cant_tell	0	0	clear	-	service truck in road; no crosswalk
+q064t3	visible	1	0	clear	-	yellow pad at curb-ramp corner
+q069t0	not_visible	0	1	clear	-	crosswalk meets red-curb corner; no pad visible
+q069t1	cant_tell	0	0	clear	-	pedestrians on crosswalk; no clear pad
+q069t2	cant_tell	0	0	clear	-	crosswalks visible; corner pads not clear
+q069t3	cant_tell	0	0	clear	-	crosswalk at left; corner pad not visible
+q072t0	cant_tell	0	0	clear	-	semi truck in road; no crosswalk
+q072t1	visible	1	0	clear	-	yellow pad at curb by crosswalk
+q072t2	visible	1	0	clear	-	yellow pad at curb by crosswalk
+q072t3	visible	1	0	clear	-	yellow pad at curb corner by crosswalk
+q077t0	cant_tell	0	0	clear	-	landscaped curb; no crosswalk in view
+q077t1	cant_tell	0	0	clear	-	parking lot; no crosswalk in view
+q077t2	cant_tell	0	0	clear	-	red-painted curb corner; no crosswalk
+q077t3	cant_tell	0	0	clear	-	curved red curb; no crosswalk or pad
+q081t0	visible	1	0	clear	-	yellow pad at right corner by bollards
+q081t1	cant_tell	0	0	clear	-	no crosswalk; tents not flagged per rules
+q081t2	visible	1	0	clear	-	yellow tactile pad at bottom-right corner
+q081t3	cant_tell	0	0	clear	-	hydrant at corner; no pad or crosswalk
+q086t0	cant_tell	0	0	clear	-	wide intersection; no crosswalk or ramp visible
+q086t1	cant_tell	0	0	clear	-	no crosswalk; small yellow mark unclear
+q086t2	cant_tell	0	0	clear	-	bike-only marking; grate in road
+q086t3	visible	1	0	clear	-	dark tactile pad on curved corner ramp
+q091t0	cant_tell	0	0	clear	-	wide road; no crosswalk or ramp visible
+q091t1	cant_tell	0	0	clear	-	no crosswalk or ramp in view
+q091t2	cant_tell	0	0	cant_tell	-	chain-link fence at corner; sidewalk position unclear
+q091t3	cant_tell	0	0	cant_tell	-	fence and box at sidewalk edge
+q096t0	visible	1	0	clear	-	yellow pad at upper-right corner by crosswalk
+q096t1	cant_tell	0	0	clear	-	yellow painted crosswalk; no pad visible
+q096t2	cant_tell	0	0	clear	-	UPS truck in road; no crosswalk
+q096t3	cant_tell	0	0	clear	-	yellow painted crosswalk; no pad visible
+q101t0	visible	2	0	clear	-	yellow pads at both crosswalk corners
+q101t1	visible	1	0	clear	-	yellow pad at corner by crosswalk
+q101t2	visible	1	0	clear	-	yellow pad at curb corner; crosswalk unclear
+q101t3	visible	1	0	clear	-	yellow pad at curb corner by crosswalk
+q104t0	visible	1	0	clear	-	yellow pad at corner by planter
+q104t1	cant_tell	0	0	clear	-	no crosswalk or pad in view
+q104t2	cant_tell	0	0	clear	-	no crosswalk or pad; person on sidewalk
+q104t3	visible	1	0	clear	-	yellow pad at lower-left corner; ad sign
+q114t0	cant_tell	0	0	clear	-	red curb and planter; no crosswalk or pad
+q114t1	cant_tell	0	0	clear	-	fenced lot; no crosswalk or pad
+q114t2	visible	1	0	clear	-	yellow tactile pad on corner ramp
+q114t3	cant_tell	0	0	clear	-	no crosswalk; no yellow pad visible
+q123t0	cant_tell	0	0	clear	-	dirt slope; no crosswalk or pad
+q123t1	cant_tell	0	0	clear	-	no crosswalk or pad visible
+q123t2	cant_tell	0	0	clear	-	no crosswalk; no pad visible
+q123t3	cant_tell	0	0	clear	-	arrow markings; no crosswalk or pad
+q127t0	cant_tell	0	0	clear	-	crosswalk in view; corners out of frame
+q127t1	visible	1	0	clear	-	yellow strip at left corner by crosswalk
+q127t2	cant_tell	0	0	clear	-	no crosswalk or pad visible
+q127t3	visible	1	0	clear	-	yellow pad at sidewalk edge by crosswalk
+q129t0	cant_tell	0	0	clear	-	curb ramp area without pad; no crosswalk
+q129t1	cant_tell	0	0	clear	-	cars in road; no crosswalk
+q129t2	cant_tell	0	0	clear	-	van in road; no crosswalk
+q129t3	visible	1	0	clear	-	yellow pad at top corner; painted accessible symbol
+q133t0	cant_tell	0	0	clear	-	parked Jeep at curb; no crosswalk
+q133t1	cant_tell	0	0	clear	-	no crosswalk or pad visible
+q133t2	cant_tell	0	0	clear	-	small yellow mark at corner; unclear
+q133t3	cant_tell	0	0	clear	-	hydrant at corner; no crosswalk or pad
+q136t0	cant_tell	0	0	clear	-	red curb and dirt; no crosswalk or pad
+q136t1	cant_tell	0	0	clear	-	painted road marks; no crosswalk or pad
+q136t2	visible	1	0	clear	-	yellow tactile pad at corner
+q136t3	cant_tell	0	0	clear	-	STOP marking; no crosswalk or pad
+q140t0	cant_tell	0	0	clear	-	painted markings; picket fence; no pad
+q140t1	cant_tell	0	0	clear	-	no crosswalk or pad visible
+q140t2	visible	1	0	clear	-	yellow pad at right corner
+q140t3	cant_tell	0	0	clear	-	parked car at corner; no crosswalk or pad
+q145t0	cant_tell	0	0	clear	-	distant crosswalk; no pad visible
+q145t1	cant_tell	0	0	clear	-	no crosswalk or pad visible
+q145t2	cant_tell	0	0	clear	-	no crosswalk or pad; yellow diamond sign
+q145t3	cant_tell	0	0	clear	-	STOP marking; curb corner, no pad
+q147t0	cant_tell	0	0	clear	-	planter at curb; no crosswalk or pad
+q147t1	cant_tell	0	0	clear	-	red curb; no crosswalk or pad
+q147t2	cant_tell	0	0	clear	-	guardrail; no crosswalk or pad
+q147t3	cant_tell	0	0	clear	-	guardrail and sign; no crosswalk
+q150t0	cant_tell	0	0	clear	-	no crosswalk or pad visible
+q150t1	cant_tell	0	0	clear	-	cars in road; no crosswalk or pad
+q150t2	cant_tell	0	0	clear	-	small yellow curb mark; no crosswalk
+q150t3	cant_tell	0	0	clear	-	small yellow curb mark; no crosswalk
+q151t0	cant_tell	0	0	clear	-	no crosswalk or pad visible
+q151t1	cant_tell	0	0	clear	-	hydrant; no crosswalk or pad
+q151t2	cant_tell	0	0	clear	-	no crosswalk or pad visible
+q151t3	visible	1	0	clear	-	yellow pad on corner ramp
+q154t0	cant_tell	0	0	clear	-	red curb; no crosswalk or pad
+q154t1	cant_tell	0	0	clear	-	glare; no crosswalk visible
+q154t2	cant_tell	0	0	clear	-	parking lot; no crosswalk or pad
+q154t3	cant_tell	0	0	clear	-	dumpster on asphalt, not sidewalk

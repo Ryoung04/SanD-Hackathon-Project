@@ -16,7 +16,8 @@
     "ai:image": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/analyze-sample.ts",
     "ai:investigate": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/investigate-sample.ts",
     "ai:imagery": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/imagery-check.ts",
-    "ai:import-review": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/import-photo-review.ts"
+    "ai:import-review": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/import-photo-review.ts",
+    "ai:photo-prep": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local --conditions=react-server scripts/ai/photo-batch-prep.ts"
   },
   "dependencies": {
     "@mastra/core": "^1.83.0",

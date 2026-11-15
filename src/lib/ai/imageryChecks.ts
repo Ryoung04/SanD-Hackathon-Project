@@ -25,6 +25,17 @@ export interface ImageryCheck {
   image_quality_notes: string | null;
   model: string | null;
   error: string | null;
+  /** Multi-photo review tally (blind per-photo verdicts). Absent for single-photo checks. */
+  photo_votes?: {
+    total: number;
+    visible: number;
+    not_visible: number;
+    cant_tell: number;
+    ramps_seen_max: number;
+    no_ramp_corners_max: number;
+    years: [string, string] | null;
+    photos: { page_url: string; captured_at: string; pano: boolean; verdict: "visible" | "not_visible" | "cant_tell" }[];
+  };
 }
 
 export interface ImageryCheckStore {
