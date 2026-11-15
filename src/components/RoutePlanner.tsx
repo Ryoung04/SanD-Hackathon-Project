@@ -26,6 +26,13 @@ export const STAIRS_TRIP = {
   end: { lat: 32.715073, lon: -117.166081 },
 };
 export type SampleTrip = typeof SAMPLE_TRIP;
+/** Demo record: City lists a missing curb ramp here, but street photos show at least one ramp (sources disagree). */
+export const EXAMPLE_RECORD = {
+  id: "city_gis:prowag2:3162",
+  lat: 32.72614,
+  lon: -117.16572,
+  label: "City lists a missing curb ramp, street photos show ramps (Little Italy)",
+};
 
 const PROFILE_TEXT: Record<RouteProfile, string> = {
   wheelchair_preference: "Prefer wheelchair-friendly paths",
@@ -46,6 +53,8 @@ interface Props {
   onClear: () => void;
   /** Fill in a preset trip and route it with the chosen profile. */
   onSample: (profile: RouteProfile, trip: SampleTrip) => void;
+  /** Open EXAMPLE_RECORD on the map and in the detail panel. */
+  onExample?: () => void;
   observations: BarrierObservation[];
   onSelect: (id: string) => void;
   /** OSM/feed context near the route (null = still loading or unavailable). */
@@ -89,6 +98,11 @@ export default function RoutePlanner(p: Props) {
         <button type="button" className="link-button small" onClick={() => p.onSample(profile, STAIRS_TRIP)} disabled={p.loading}>
           Try a sample trip: {STAIRS_TRIP.label}
         </button>
+        {p.onExample && (
+          <button type="button" className="link-button small" onClick={p.onExample}>
+            See an example record: {EXAMPLE_RECORD.label}
+          </button>
+        )}
       </form>
 
       <div aria-live="polite">

@@ -7,7 +7,7 @@ import { clearBarrierCache, debounce, filterBySource, loadBarriers } from "@/lib
 import BarrierDetail from "@/components/BarrierDetail";
 import ObservationList from "@/components/ObservationList";
 import SourceLegend, { ALL_SOURCES } from "@/components/SourceLegend";
-import RoutePlanner, { type PickTarget, type SampleTrip } from "@/components/RoutePlanner";
+import RoutePlanner, { EXAMPLE_RECORD, type PickTarget, type SampleTrip } from "@/components/RoutePlanner";
 import { loadAccessData } from "@/lib/map/accessStore";
 import { routeContext, type ContextGroup } from "@/lib/map/routeContext";
 import NoticesPanel from "@/components/NoticesPanel";
@@ -89,6 +89,22 @@ export default function Home() {
     return () => { live = false; };
   }, [route]);
 
+  // Example record button: pan there, make sure the record is loaded, select it, show its detail.
+  const [extraObs, setExtraObs] = useState<BarrierObservation[]>([]);
+  const showExample = async () => {
+    const { id, lat, lon } = EXAMPLE_RECORD;
+    onFocus([lon, lat]);
+    setSelectedId(id);
+    try {
+      const d = 0.002;
+      const res = await fetch(`/api/barriers?bbox=${lon - d},${lat - d},${lon + d},${lat + d}&limit=500`);
+      const body = await res.json();
+      const obs = (body.data ?? []).find((o: BarrierObservation) => o.id === id);
+      if (obs) setExtraObs((prev) => (prev.some((o) => o.id === id) ? prev : [...prev, obs]));
+    } catch { /* the map's own bbox load will still bring it in */ }
+    requestAnimationFrame(() => document.getElementById("detail-h")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  };
+
   const clearRoute = () => { routeSeq.current++; setStart(null); setEnd(null); setRoute(null); setRouting(false); setPicking(null); };
 
   const lastBBox = useRef<BBox | null>(null);
@@ -109,10 +125,12 @@ export default function Home() {
 
   const visible = useMemo(() => filterBySource(all, enabled), [all, enabled]);
   const withRoute = useMemo(() => {
-    if (!routeObs.length) return all;
+    if (!routeObs.length && !extraObs.length) return all;
     const have = new Set(all.map((o) => o.id));
-    return [...all, ...routeObs.filter((o) => !have.has(o.id))];
-  }, [all, routeObs]);
+    const out = [...all];
+    for (const o of [...routeObs, ...extraObs]) if (!have.has(o.id)) { have.add(o.id); out.push(o); }
+    return out;
+  }, [all, routeObs, extraObs]);
   const counts = useMemo(() => {
     const c: Partial<Record<SourceKind, number>> = {};
     for (const o of all) c[o.source_kind] = (c[o.source_kind] ?? 0) + 1;
@@ -161,7 +179,7 @@ export default function Home() {
             start={start} end={end} onStart={setStart} onEnd={setEnd} picking={picking} onPick={setPicking}
             result={route} loading={routing} onSubmit={submitRoute} onClear={clearRoute}
             observations={withRoute} onSelect={setSelectedId}
-            onSample={runSample} context={context} contextError={contextError} onFocus={onFocus}
+            onSample={runSample} onExample={showExample} context={context} contextError={contextError} onFocus={onFocus}
           />
           <BarrierDetail obs={selected} onClose={() => setSelectedId(null)} />
           <NoticesPanel onSelect={setSelectedId} />
