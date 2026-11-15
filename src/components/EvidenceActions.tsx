@@ -25,10 +25,17 @@ export default function EvidenceActions({ target, onScreenText }: Props) {
   const [explain, setExplain] = useState<InvestigateResult | null>(null);
   const [busy, setBusy] = useState<"investigate" | "speak" | null>(null);
   const [speakMsg, setSpeakMsg] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
   const audioUrl = useRef<string | null>(null);
+  const audio = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => { setExplain(null); setSpeakMsg(null); }, [target?.id]);
-  useEffect(() => () => { if (audioUrl.current) URL.revokeObjectURL(audioUrl.current); }, []);
+  const stopAudio = () => {
+    if (audio.current) { audio.current.pause(); audio.current.currentTime = 0; audio.current = null; }
+    setPlaying(false);
+  };
+
+  useEffect(() => { stopAudio(); setExplain(null); setSpeakMsg(null); }, [target?.id]);
+  useEffect(() => () => { stopAudio(); if (audioUrl.current) URL.revokeObjectURL(audioUrl.current); }, []);
 
   const onExplain = async () => {
     if (!target) return;
@@ -40,6 +47,7 @@ export default function EvidenceActions({ target, onScreenText }: Props) {
   };
 
   const onSpeak = async () => {
+    stopAudio();
     setBusy("speak");
     setSpeakMsg(null);
     // Once the AI summary is on screen, read that (with its caveat); otherwise the record text.
@@ -48,7 +56,11 @@ export default function EvidenceActions({ target, onScreenText }: Props) {
     if (r.ok) {
       if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
       audioUrl.current = URL.createObjectURL(r.audio);
-      new Audio(audioUrl.current).play().catch(() => setSpeakMsg("Audio could not be played."));
+      const a = new Audio(audioUrl.current);
+      audio.current = a;
+      a.onended = () => { if (audio.current === a) stopAudio(); };
+      setPlaying(true);
+      a.play().catch(() => { if (audio.current === a) stopAudio(); setSpeakMsg("Audio could not be played."); });
     } else {
       if (r.code === "NOT_DEPLOYED") { notDeployed.speak = true; force((n) => n + 1); }
       setSpeakMsg(r.message);
@@ -65,7 +77,11 @@ export default function EvidenceActions({ target, onScreenText }: Props) {
           <button type="button" onClick={onExplain} disabled={busy !== null}>{busy === "investigate" ? "Explaining…" : "Explain evidence"}</button>
         )}
         {!notDeployed.speak && (
-          <button type="button" onClick={onSpeak} disabled={busy !== null}>{busy === "speak" ? "Loading audio…" : explain?.ok ? "Read summary aloud" : "Read aloud"}</button>
+          playing ? (
+            <button type="button" onClick={stopAudio} aria-label="Stop reading aloud">Stop</button>
+          ) : (
+            <button type="button" onClick={onSpeak} disabled={busy !== null}>{busy === "speak" ? "Loading audio…" : explain?.ok ? "Read summary aloud" : "Read aloud"}</button>
+          )
         )}
       </div>
       <div aria-live="polite">
