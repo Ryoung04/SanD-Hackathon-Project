@@ -8,8 +8,8 @@ import { SOURCE_COLORS, SOURCE_GLYPHS } from "@/lib/ui/caveats";
 import { STUDY_BBOX } from "@/lib/data/studyArea";
 import { stairBlocks } from "@/lib/map/extrude";
 import type { AccessCollection } from "@/lib/map/osmAccess";
-import { fromOsm, mergeById, toMapProps, SLOPE_BANDS, slopeBandLabel, type AccessFeatureV1 } from "@/lib/map/accessContract";
-import { fetchAccessFeatures } from "@/lib/map/accessClient";
+import { toMapProps, SLOPE_BANDS, slopeBandLabel, type AccessFeatureV1 } from "@/lib/map/accessContract";
+import { loadAccessData, loadOsmSnapshot } from "@/lib/map/accessStore";
 
 /**
  * MapLibre map for downtown: flat by default, optional 3D tilt with extruded buildings
@@ -18,7 +18,6 @@ import { fetchAccessFeatures } from "@/lib/map/accessClient";
  */
 
 const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
-const ACCESS_URL = "/data/downtown-access.geojson";
 const FONT = ["Noto Sans Bold"];
 
 interface Props {
@@ -31,6 +30,8 @@ interface Props {
   end?: LatLon | null;
   picking?: boolean;
   onPick?: (p: LatLon) => void;
+  /** Pan request [lon, lat] (route steps / context items); seq changes on every request. */
+  focus?: { at: [number, number]; seq: number } | null;
 }
 
 /** Context layer groups the user can toggle. Labels are shown in the legend (not color-only). */
@@ -40,7 +41,7 @@ const GROUPS = [
   { key: "kerbs", label: "Curb ramps / kerbs", layers: ["acc-kerb", "acc-kerb-label"] },
   { key: "steps", label: "Stairs", layers: ["acc-steps-casing", "acc-steps-line", "acc-steps-3d"] },
   { key: "ramps", label: "Ramps (R) and unconfirmed candidates (?)", layers: ["acc-ramp-casing", "acc-ramp", "acc-ramp-pt", "acc-ramp-pt-label"] },
-  { key: "slope", label: "Slope (where known)", layers: ["acc-slope-casing", "acc-slope-measured", "acc-slope-estimated", "acc-slope-pt", "acc-slope-label"] },
+  { key: "slope", label: "Slope (where known)", layers: ["acc-slope-casing", "acc-slope-measured", "acc-slope-estimated", "acc-slope-stairlike", "acc-slope-pt", "acc-slope-label"] },
   { key: "elevators", label: "Elevators", layers: ["acc-elevator", "acc-elevator-label"] },
 ] as const;
 type GroupKey = (typeof GROUPS)[number]["key"];
@@ -87,51 +88,125 @@ function barrierFC(obs: BarrierObservation[], selectedId: string | null) {
 }
 
 /**
- * "Color" basemap: pastel tints on OpenFreeMap positron so the saturated accessibility
- * overlays (each with a white casing + shape/dash cue) stay the most prominent thing.
- * Decorative only: not a photo and not positionally authoritative.
+ * Map styles. Edit the tables below to restyle; no other code needs to change.
+ *  - color:  pastel base + colorblind-safe overlays (default).
+ *  - street: aerial-photo-like: asphalt roads, concrete sidewalks drawn at TRUE WIDTH,
+ *            white zebra crosswalks on asphalt, green parks. Illustrative, not imagery:
+ *            sidewalk width is a typical value, not measured.
+ *  - plain:  the original grey base, for low distraction.
+ * Overlays keep shape/dash/label cues in every style, so meaning never depends on color.
  */
-const VIVID_BASE: Record<string, [string, string]> = {
-  background: ["background-color", "#f7f1e6"],
-  park: ["fill-color", "#cfe8c4"],
-  landcover_wood: ["fill-color", "#bcdcae"],
-  landuse_residential: ["fill-color", "#f4e9d8"],
-  water: ["fill-color", "#a6d3ef"],
-  waterway: ["line-color", "#86c1e6"],
-  road_area_pier: ["fill-color", "#ead9bf"],
-  road_pier: ["line-color", "#ead9bf"],
-  highway_path: ["line-color", "#efe3cf"],
-  highway_minor: ["line-color", "#ffffff"],
-  highway_major_casing: ["line-color", "#e2cba0"],
-  highway_major_inner: ["line-color", "#fff4d1"],
-  highway_motorway_casing: ["line-color", "#dcb070"],
-  highway_motorway_inner: ["line-color", "#ffdf9e"],
-  highway_motorway_bridge_casing: ["line-color", "#dcb070"],
-  highway_motorway_bridge_inner: ["line-color", "#ffdf9e"],
-  railway: ["line-color", "#c4b8d8"],
-  railway_transit: ["line-color", "#c4b8d8"],
+export type MapStyle = "color" | "street" | "plain";
+export const MAP_STYLES: { key: MapStyle; label: string }[] = [
+  { key: "color", label: "Color" },
+  { key: "street", label: "Street detail" },
+  { key: "plain", label: "Plain" },
+];
+
+/** Base layer id -> [paint property, color] per style. "plain" restores the original style values. */
+const BASE_PAINT: Record<string, { prop: string; color: string; street: string }> = {
+  background: { prop: "background-color", color: "#f7f1e6", street: "#cdc7ba" },
+  park: { prop: "fill-color", color: "#cfe8c4", street: "#8dbd76" },
+  landcover_wood: { prop: "fill-color", color: "#bcdcae", street: "#6da35c" },
+  landuse_residential: { prop: "fill-color", color: "#f4e9d8", street: "#c9c2b4" },
+  water: { prop: "fill-color", color: "#a6d3ef", street: "#5fa6d1" },
+  waterway: { prop: "line-color", color: "#86c1e6", street: "#5598c4" },
+  road_area_pier: { prop: "fill-color", color: "#ead9bf", street: "#b4a892" },
+  road_pier: { prop: "line-color", color: "#ead9bf", street: "#b4a892" },
+  highway_path: { prop: "line-color", color: "#efe3cf", street: "#bab2a3" },
+  highway_minor: { prop: "line-color", color: "#ffffff", street: "#5c6168" },
+  highway_major_casing: { prop: "line-color", color: "#e2cba0", street: "#3d4248" },
+  highway_major_inner: { prop: "line-color", color: "#fff4d1", street: "#575c63" },
+  highway_motorway_casing: { prop: "line-color", color: "#dcb070", street: "#383c42" },
+  highway_motorway_inner: { prop: "line-color", color: "#ffdf9e", street: "#53585f" },
+  highway_motorway_bridge_casing: { prop: "line-color", color: "#dcb070", street: "#383c42" },
+  highway_motorway_bridge_inner: { prop: "line-color", color: "#ffdf9e", street: "#53585f" },
+  railway: { prop: "line-color", color: "#c4b8d8", street: "#857c72" },
+  railway_transit: { prop: "line-color", color: "#c4b8d8", street: "#857c72" },
 };
 
-function applyPalette(m: MLMap, vivid: boolean, orig: Record<string, unknown>) {
+/**
+ * Line width in pixels that matches `m` metres on the ground at this latitude
+ * (512-px tiles: metres/pixel = 40075016.686 * cos(lat) / (512 * 2^zoom)).
+ */
+const MPP_Z0 = (40075016.686 * Math.cos((32.72 * Math.PI) / 180)) / 512;
+export const metresWide = (m: number, minPx = 0.8) =>
+  ["interpolate", ["exponential", 2], ["zoom"], 14, Math.max(minPx, (m * 2 ** 14) / MPP_Z0), 22, (m * 2 ** 22) / MPP_Z0] as any;
+const zoomW = (a: number, b: number) => ["interpolate", ["linear"], ["zoom"], 15, a, 19, b] as any;
+
+/** Typical downtown widths (metres) used by the street style. Illustrative only. */
+const STREET_WIDTH = { sidewalk: 3, curbEdge: 3.6, footway: 2.2, crosswalk: 3, minorRoad: 11, majorRoad: 16 };
+
+type OverlayPaint = Record<string, Record<string, unknown>>;
+function overlayPaint(style: MapStyle, t: ReturnType<typeof tokens>): OverlayPaint {
+  if (style === "street") {
+    return {
+      "acc-path-casing": { "line-color": "#8a8377", "line-width": metresWide(STREET_WIDTH.curbEdge) },
+      "acc-sidewalk": { "line-color": "#ece7dc", "line-width": metresWide(STREET_WIDTH.sidewalk) },
+      "acc-footway": { "line-color": "#e4ddcf", "line-width": metresWide(STREET_WIDTH.footway), "line-dasharray": [1, 0] },
+      "acc-crossing-casing": { "line-color": "#5c6168", "line-width": metresWide(STREET_WIDTH.crosswalk + 0.6) },
+      "acc-crossing-line": { "line-color": "#ffffff", "line-width": metresWide(STREET_WIDTH.crosswalk), "line-dasharray": [0.18, 0.18] },
+      highway_minor: { "line-width": metresWide(STREET_WIDTH.minorRoad) },
+      highway_major_inner: { "line-width": metresWide(STREET_WIDTH.majorRoad) },
+      highway_major_casing: { "line-width": metresWide(STREET_WIDTH.majorRoad + 1) },
+    };
+  }
+  return {
+    "acc-path-casing": { "line-color": t.halo, "line-width": zoomW(2, 7) },
+    "acc-sidewalk": { "line-color": t.sidewalk, "line-width": zoomW(1, 4.5) },
+    "acc-footway": { "line-color": t.sidewalk, "line-width": zoomW(0.8, 3), "line-dasharray": [2, 1.5] },
+    "acc-crossing-casing": { "line-color": t.crossing, "line-width": zoomW(2.5, 10) },
+    "acc-crossing-line": { "line-color": t.halo, "line-width": zoomW(1.8, 8), "line-dasharray": [0.35, 0.35] },
+    // Base road widths: restored from the original style (null = keep what was saved).
+    highway_minor: { "line-width": null },
+    highway_major_inner: { "line-width": null },
+    highway_major_casing: { "line-width": null },
+  };
+}
+
+/** Original base values, saved once at load so "plain"/"color" can restore them. */
+type Orig = Record<string, Record<string, unknown>>;
+function saveOrig(m: MLMap): Orig {
+  const o: Orig = {};
+  for (const [id, b] of Object.entries(BASE_PAINT)) if (m.getLayer(id)) o[id] = { [b.prop]: m.getPaintProperty(id, b.prop as any) };
+  for (const id of ["highway_minor", "highway_major_inner", "highway_major_casing"]) if (m.getLayer(id)) (o[id] ??= {})["line-width"] = m.getPaintProperty(id, "line-width" as any);
+  return o;
+}
+
+function applyStyle(m: MLMap, style: MapStyle, orig: Orig) {
   const t = tokens();
-  for (const [id, [prop, color]] of Object.entries(VIVID_BASE)) {
+  for (const [id, b] of Object.entries(BASE_PAINT)) {
     if (!m.getLayer(id)) continue;
-    m.setPaintProperty(id, prop as any, vivid ? color : (orig[id] as any));
+    const v = style === "plain" ? orig[id]?.[b.prop] : style === "street" ? b.street : b.color;
+    if (v !== undefined) m.setPaintProperty(id, b.prop as any, v as any);
+  }
+  for (const [id, props] of Object.entries(overlayPaint(style, t))) {
+    if (!m.getLayer(id)) continue;
+    for (const [prop, v] of Object.entries(props)) {
+      const val = v === null ? orig[id]?.[prop] : v;
+      if (val !== undefined) m.setPaintProperty(id, prop as any, val as any);
+    }
   }
   if (m.getLayer("buildings-3d")) {
     const h = ["coalesce", ["get", "render_height"], 0];
-    m.setPaintProperty("buildings-3d", "fill-extrusion-color", (vivid
-      ? ["interpolate", ["linear"], h, 0, t.bLow, 25, t.bMid, 70, t.bHigh, 140, t.bTower]
-      : ["interpolate", ["linear"], h, 0, t.building, 60, t.buildingTop]) as any);
+    const ramp = style === "color" ? [0, t.bLow, 25, t.bMid, 70, t.bHigh, 140, t.bTower]
+      : style === "street" ? [0, "#d6cfc3", 30, "#bdb7ae", 90, "#a2a7ae", 160, "#8e98a3"] // roofs: concrete -> glass
+      : [0, t.building, 60, t.buildingTop];
+    m.setPaintProperty("buildings-3d", "fill-extrusion-color", ["interpolate", ["linear"], h, ...ramp] as any);
   }
-  m.setLight(vivid
-    ? { anchor: "viewport", color: "#fff1dc", intensity: 0.45, position: [1.3, 210, 35] }
-    : { anchor: "viewport", color: "#ffffff", intensity: 0.5, position: [1.15, 210, 30] });
+  m.setLight(style === "plain"
+    ? { anchor: "viewport", color: "#ffffff", intensity: 0.5, position: [1.15, 210, 30] }
+    : { anchor: "viewport", color: "#fff1dc", intensity: style === "street" ? 0.55 : 0.45, position: [1.3, 210, 35] });
   // Sky/fog only shows when tilted.
-  (m as any).setSky?.(vivid
-    ? { "sky-color": "#8cc8ee", "horizon-color": "#fde3c6", "fog-color": "#f7ecdd", "sky-horizon-blend": 0.6, "horizon-fog-blend": 0.7, "fog-ground-blend": 0.9 }
-    : { "sky-color": "#e2e8f0", "horizon-color": "#f1f5f9", "fog-color": "#f8fafc", "sky-horizon-blend": 0.6, "horizon-fog-blend": 0.7, "fog-ground-blend": 0.9 });
+  (m as any).setSky?.(style === "plain"
+    ? { "sky-color": "#e2e8f0", "horizon-color": "#f1f5f9", "fog-color": "#f8fafc", "sky-horizon-blend": 0.6, "horizon-fog-blend": 0.7, "fog-ground-blend": 0.9 }
+    : { "sky-color": "#8cc8ee", "horizon-color": "#fde3c6", "fog-color": style === "street" ? "#e6e1d6" : "#f7ecdd", "sky-horizon-blend": 0.6, "horizon-fog-blend": 0.7, "fog-ground-blend": 0.9 });
 }
+
+const STYLE_KEY = "accesspath.mapStyle";
+const readStyle = (): MapStyle => {
+  try { const v = localStorage.getItem(STYLE_KEY); return v === "street" || v === "plain" ? v : "color"; } catch { return "color"; }
+};
 
 const ACCESS_TEXT: Record<string, string> = {
   ramp: "Ramp / sloped path",
@@ -151,9 +226,10 @@ export default function MapView3D(p: Props) {
   const [ready, setReady] = useState(false);
   const [tilted, setTilted] = useState(false);
   const [shown, setShown] = useState<Record<GroupKey, boolean>>({ buildings: true, paths: true, kerbs: true, steps: true, ramps: true, slope: true, elevators: true });
-  const [accessStatus, setAccessStatus] = useState<string>("Slope data: OpenStreetMap incline tags only.");
-  const [vivid, setVivid] = useState(true);
-  const origPaint = useRef<Record<string, unknown>>({});
+  const [accessStatus, setAccessStatus] = useState<string>("Loading slope data…");
+  const [style, setStyle] = useState<MapStyle>("color");
+  useEffect(() => { setStyle(readStyle()); }, []);
+  const origPaint = useRef<Orig>({});
   const [accessNote, setAccessNote] = useState<string | null>(null);
   const cbs = useRef(p);
   cbs.current = p;
@@ -204,19 +280,16 @@ export default function MapView3D(p: Props) {
         m.addSource("study", { type: "geojson", data: { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: [[w, s], [e, s], [e, n], [w, n], [w, s]] } } });
         m.addLayer({ id: "study-outline", type: "line", source: "study", paint: { "line-color": t.ink, "line-width": 1.5, "line-dasharray": [4, 3], "line-opacity": 0.6 } });
 
-        // OSM accessibility context (static snapshot).
-        let access: AccessCollection | null = null;
-        try { access = await (await fetch(ACCESS_URL)).json(); } catch { setAccessNote("Sidewalk/curb detail layer unavailable."); }
-        const fc = access ?? (empty as any);
-        // Every access feature goes through the contract (accessContract.ts) so OSM and Owner C data share one shape.
-        const osmNorm: AccessFeatureV1[] = (fc.features as any[]).map((f) => fromOsm(f, fc.metadata?.retrieved_at ?? null));
+        // Accessibility context via the shared store (accessStore.ts): every feature goes through
+        // the contract (accessContract.ts), so OSM and Owner C data share one shape.
+        const snap = await loadOsmSnapshot();
+        if (snap.error) setAccessNote("Sidewalk/curb detail layer unavailable.");
         const toFC = (list: AccessFeatureV1[]) => ({ type: "FeatureCollection", features: list.map((f) => ({ type: "Feature", geometry: f.geometry, properties: toMapProps(f) })) });
-        m.addSource("access", { type: "geojson", data: toFC(osmNorm) as any });
-        const steps = (fc.features as any[]).filter((f) => f.properties.kind === "steps" && f.geometry.type === "LineString");
+        m.addSource("access", { type: "geojson", data: toFC(snap.norm) as any });
+        const steps = (snap.raw as any[]).filter((f) => f.properties.kind === "steps" && f.geometry.type === "LineString");
         m.addSource("steps3d", { type: "geojson", data: { type: "FeatureCollection", features: steps.flatMap((f) => stairBlocks(f.geometry.coordinates, f.properties.osm_id, f.properties.step_count)) } });
 
         const kind = (k: string | string[]) => (Array.isArray(k) ? ["in", ["get", "kind"], ["literal", k]] : ["==", ["get", "kind"], k]) as any;
-        const zoomW = (a: number, b: number) => ["interpolate", ["linear"], ["zoom"], 15, a, 19, b] as any;
 
         const round = { "line-cap": "round", "line-join": "round" } as any;
         // White casings under line overlays: crisp edges on any base or building color.
@@ -271,6 +344,13 @@ export default function MapView3D(p: Props) {
         m.addLayer({ id: "acc-slope-casing", type: "line", source: "access", filter: slopeLine, layout: round, paint: { "line-color": t.halo, "line-width": zoomW(4, 12) } });
         m.addLayer({ id: "acc-slope-measured", type: "line", source: "access", filter: ["all", slopeLine, ["==", ["get", "estimated"], 0]], layout: round, paint: { "line-color": slopeColor, "line-width": zoomW(2, 7) } });
         m.addLayer({ id: "acc-slope-estimated", type: "line", source: "access", filter: ["all", slopeLine, ["==", ["get", "estimated"], 1]], paint: { "line-color": slopeColor, "line-width": zoomW(2, 7), "line-dasharray": [1.6, 0.8] } });
+        // Very steep ground (>12%) not tagged as stairs: drawn with the STAIR pattern (red, short dashes),
+        // because it may be unmapped stairs. Popup and route panel say "possibly", never "is".
+        m.addLayer({
+          id: "acc-slope-stairlike", type: "line", source: "access",
+          filter: ["all", slopeLine, ["==", ["get", "slope_band"], "very_steep"], ["!=", ["get", "kind"], "steps"]],
+          paint: { "line-color": t.slope.very_steep, "line-width": zoomW(3, 9), "line-dasharray": [0.6, 0.25] },
+        });
         m.addLayer({
           id: "acc-slope-pt", type: "circle", source: "access", filter: ["all", ["==", ["geometry-type"], "Point"], ["!=", ["get", "slope_band"], "unknown"]], minzoom: 15.5,
           paint: { "circle-radius": zoomW(3, 9), "circle-color": t.halo, "circle-stroke-color": slopeColor, "circle-stroke-width": 3 },
@@ -283,12 +363,16 @@ export default function MapView3D(p: Props) {
         });
 
         // Owner C feed (optional). API features replace OSM features with the same id, else are added.
-        fetchAccessFeatures(STUDY_BBOX as [number, number, number, number]).then((res) => {
+        loadAccessData().then(({ api: res, merged, derivedSlopes }) => {
           if (cancelled) return;
-          if (!res.ok) { setAccessStatus(res.code === "NOT_DEPLOYED" ? "Slope data: OpenStreetMap incline tags only (detailed feed not connected yet)." : `Detailed access feed unavailable (${res.message}). Showing OpenStreetMap only.`); return; }
-          (m.getSource("access") as GeoJSONSource | undefined)?.setData(toFC(mergeById(osmNorm, res.features)) as any);
+          const dem = derivedSlopes ? `Slope estimates: ${derivedSlopes} path segments from USGS lidar elevation (estimates, not measured)` : "Slope data: OpenStreetMap incline tags only";
+          if (!res.ok) {
+            setAccessStatus(`${dem}. ${res.code === "NOT_DEPLOYED" ? "Detailed access feed not connected yet." : `Detailed access feed unavailable (${res.message}).`}`);
+            return;
+          }
+          (m.getSource("access") as GeoJSONSource | undefined)?.setData(toFC(merged) as any);
           const est = res.features.filter((f) => f.properties.provenance.method === "ai_estimate" || f.properties.provenance.method === "inferred").length;
-          setAccessStatus([`Detailed access feed: ${res.features.length} features (${est} estimated)`, res.sourceNote, res.dropped ? `${res.dropped} unreadable rows skipped` : null, res.versionWarning].filter(Boolean).join(". ") + ".");
+          setAccessStatus([dem, `Detailed access feed: ${res.features.length} features (${est} estimated)`, res.sourceNote, res.dropped ? `${res.dropped} unreadable rows skipped` : null, res.versionWarning].filter(Boolean).join(". ") + ".");
         });
 
         // Route + barriers above context.
@@ -316,14 +400,12 @@ export default function MapView3D(p: Props) {
         m.addLayer({ id: "pins", type: "circle", source: "pins", paint: { "circle-radius": 13, "circle-color": ["match", ["get", "k"], "start", t.pinStart, t.pinEnd], "circle-stroke-color": t.halo, "circle-stroke-width": 2 } });
         m.addLayer({ id: "pins-label", type: "symbol", source: "pins", layout: { "text-field": ["match", ["get", "k"], "start", "A", "B"], "text-font": FONT, "text-size": 13, "text-allow-overlap": true }, paint: { "text-color": t.halo } });
 
-        for (const id of Object.keys(VIVID_BASE)) {
-          if (m.getLayer(id)) origPaint.current[id] = m.getPaintProperty(id, VIVID_BASE[id][0] as any);
-        }
-        applyPalette(m, true, origPaint.current);
+        origPaint.current = saveOrig(m);
+        applyStyle(m, readStyle(), origPaint.current);
 
         // Interactions.
         const clickable = ["barrier-points", "barrier-lines"];
-        const ctx = ["acc-steps-line", "acc-ramp", "acc-ramp-pt", "acc-slope-measured", "acc-slope-estimated", "acc-slope-pt", "acc-kerb", "acc-crossing", "acc-elevator"];
+        const ctx = ["acc-steps-line", "acc-ramp", "acc-ramp-pt", "acc-slope-measured", "acc-slope-estimated", "acc-slope-stairlike", "acc-slope-pt", "acc-kerb", "acc-crossing", "acc-elevator"];
         for (const id of [...clickable, ...ctx]) {
           m.on("mouseenter", id, () => { m.getCanvas().style.cursor = "pointer"; });
           m.on("mouseleave", id, () => { m.getCanvas().style.cursor = cbs.current.picking ? "crosshair" : ""; });
@@ -386,8 +468,16 @@ export default function MapView3D(p: Props) {
   }, [shown, ready]);
 
   useEffect(() => {
-    if (ready && map.current) applyPalette(map.current, vivid, origPaint.current);
-  }, [vivid, ready]);
+    if (ready && map.current) applyStyle(map.current, style, origPaint.current);
+    try { localStorage.setItem(STYLE_KEY, style); } catch { /* per-viewer convenience only */ }
+  }, [style, ready]);
+
+  useEffect(() => {
+    const m = map.current;
+    if (!ready || !m || !p.focus) return;
+    m.easeTo({ center: p.focus.at, zoom: Math.max(m.getZoom(), 18.5), duration: 600 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [p.focus?.seq, ready]);
 
   const toggle3d = () => {
     const m = map.current;
@@ -402,9 +492,11 @@ export default function MapView3D(p: Props) {
       <div ref={el} className="map" role="region" aria-label="Map of downtown San Diego with potential accessibility barriers" />
       <div className="map-overlay">
         <button type="button" aria-pressed={tilted} onClick={toggle3d}>{tilted ? "Flat view" : "3D view"}</button>
-        <button type="button" aria-pressed={!vivid} onClick={() => setVivid((v) => !v)} title="Switch between a colorful and a plain, low-distraction base map">
-          {vivid ? "Plain colors" : "Color map"}
-        </button>
+        <div className="style-switch" role="radiogroup" aria-label="Map style">
+          {MAP_STYLES.map((o) => (
+            <button key={o.key} type="button" role="radio" aria-checked={style === o.key} onClick={() => setStyle(o.key)}>{o.label}</button>
+          ))}
+        </div>
         <details className="map-layers">
           <summary>Map details</summary>
           <ul>
@@ -418,7 +510,7 @@ export default function MapView3D(p: Props) {
             ))}
           </ul>
           <p className="small muted">
-            Curb ramps: ▼ lowered · ▲ raised · ? unknown. Crosswalks: zebra stripes. Stairs: dashed orange. Ramps: magenta; R = mapped, ? = unconfirmed candidate. Slope colors: light = gentle, dark = steep; solid = measured, dashed = estimate; "~6%" = not measured. A slope value is never proof a route is accessible. Sidewalk, curb and stair detail is community-mapped (OpenStreetMap), may be incomplete, and is not verified. Missing detail means unknown.
+            Curb ramps: ▼ lowered · ▲ raised · ? unknown. Crosswalks: zebra stripes. Stairs: dashed orange. Street detail: sidewalks drawn as concrete at a typical (not measured) width, crosswalks as white stripes. Ramps: magenta; R = mapped, ? = unconfirmed candidate. Slope colors: green = gentle, amber = moderate, red = steep; red short dashes = very steep, possibly unmapped stairs; solid = measured, dashed = estimate; "~6%" = not measured. A slope value is never proof a route is accessible. Sidewalk, curb and stair detail is community-mapped (OpenStreetMap), may be incomplete, and is not verified. Missing detail means unknown.
           </p>
           <ul className="slope-legend" aria-label="Slope bands">
             {SLOPE_BANDS.map((b) => (
@@ -458,6 +550,7 @@ function accessPopup(pr: Record<string, any>): HTMLElement {
   }
   if (has(pr.cross_slope_pct)) rows.push(["Cross slope", `${pr.estimated ? "~" : ""}${Math.round(Number(pr.cross_slope_pct) * 10) / 10}%`]);
   if (has(pr.width_m)) rows.push(["Width", `${Math.round(Number(pr.width_m) * 100) / 100} m`]);
+  if (has(pr.rise_m)) rows.push(["Height change", `~${pr.rise_m} m (estimate from elevation data)`]);
   if (has(pr.kerb_height_cm)) rows.push(["Curb height", `${pr.kerb_height_cm} cm`]);
   if (pr.kind === "steps") rows.push(["Steps", has(pr.step_count) ? String(pr.step_count) : "count unknown"]);
   if (has(pr.surface)) rows.push(["Surface", String(pr.surface)]);

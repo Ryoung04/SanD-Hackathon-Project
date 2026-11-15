@@ -193,3 +193,38 @@ test("fetchRoute parses a successful response", async () => {
     assert.equal(res.duration_s, 900);
   }
 });
+
+// ---------- profiles + turn-by-turn ----------
+
+test("avoid_stairs profile: valid, sets step_penalty + use_hills; directions requested", () => {
+  const r = parseRouteRequest({ start: { lat: 32.715, lon: -117.16 }, end: { lat: 32.716, lon: -117.161 }, profile: "avoid_stairs" });
+  assert.ok(r.ok && r.req.profile === "avoid_stairs");
+  const body: any = buildValhallaBody(baseReq("avoid_stairs"));
+  assert.equal(body.costing_options.pedestrian.type, "wheelchair");
+  assert.equal(body.costing_options.pedestrian.step_penalty, 3600);
+  assert.equal(body.costing_options.pedestrian.use_hills, 0);
+  assert.equal(body.directions_type, "instructions");
+  assert.equal(parseRouteRequest({ start: { lat: 1, lon: 1 }, end: { lat: 1, lon: 1 }, profile: "teleport" }).ok, false);
+});
+
+test("parseValhalla maps maneuvers to steps with global begin_index across legs; skips empty instructions", () => {
+  const legA: [number, number][] = [[-117.1611, 32.7157], [-117.1600, 32.7160], [-117.1580, 32.7180]];
+  const legB: [number, number][] = [[-117.1580, 32.7180], [-117.1550, 32.7203]];
+  const res = parseValhalla({
+    trip: {
+      summary: { length: 0.5, time: 400 },
+      legs: [
+        { shape: encodePrecision6(legA), maneuvers: [{ instruction: "Walk east on Broadway.", length: 0.2, begin_shape_index: 0, street_names: ["Broadway"] }, { instruction: "", length: 0, begin_shape_index: 1 }, { instruction: "Turn left.", length: 0.1, begin_shape_index: 1 }] },
+        { shape: encodePrecision6(legB), maneuvers: [{ instruction: "Continue.", length: 0.2, begin_shape_index: 1 }] },
+      ],
+    },
+  });
+  assert.ok(res.ok);
+  if (!res.ok) return;
+  assert.deepEqual(res.steps.map((s) => [s.instruction, s.distance_m, s.begin_index, s.street]), [
+    ["Walk east on Broadway.", 200, 0, "Broadway"],
+    ["Turn left.", 100, 1],
+    ["Continue.", 200, 3],
+  ].map((x) => (x.length === 3 ? [...x, null] : x)));
+  assert.equal(res.route.coordinates.length, 4);
+});

@@ -32,12 +32,13 @@
   --map-crossing: #1e293b;
   --map-steps: #d55e00;
   --map-ramp: #a8458a;
-  /* Slope bands (viridis-like: lightness falls as slope rises, so order reads without hue) */
-  --map-slope-level: #5ec962;
-  --map-slope-gentle: #21918c;
-  --map-slope-moderate: #3b528b;
-  --map-slope-steep: #6a2c8f;
-  --map-slope-very-steep: #2a0a3d;
+  /* Slope bands: green -> amber -> stair red. Steep bands share the stairs' red family on purpose
+     (both are hard to traverse). Order also reads from line style and the "~9%" label. */
+  --map-slope-level: #3e9b6a;
+  --map-slope-gentle: #8fae2c;
+  --map-slope-moderate: #e09a1a;
+  --map-slope-steep: #d55e00;
+  --map-slope-very-steep: #a50f15;
   --map-kerb-lowered: #007a5a;
   --map-kerb-raised: #b06d00;
   --map-kerb-unknown: #64748b;
@@ -158,6 +159,12 @@ blockquote { margin: 0.25rem 0; padding-left: 0.5rem; border-left: 3px solid var
 .map3d { position: absolute; inset: 0; }
 .map-overlay { position: absolute; top: 10px; left: 10px; z-index: 2; display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-start; max-width: min(300px, calc(100% - 70px)); }
 .map-overlay > button, .map-layers { background: var(--panel); box-shadow: 0 1px 3px rgb(0 0 0 / 0.2); }
+/* Map style switch (radiogroup): pressed state shown by fill AND a check mark, not color alone. */
+.style-switch { display: flex; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: 0 1px 3px rgb(0 0 0 / 0.2); overflow: hidden; }
+.style-switch button { border: 0; border-radius: 0; background: transparent; padding: 0.3rem 0.6rem; min-height: 36px; }
+.style-switch button + button { border-left: 1px solid var(--border); }
+.style-switch button[aria-checked="true"] { background: var(--strong); color: var(--on-strong); font-weight: 600; }
+.style-switch button[aria-checked="true"]::before { content: "✓ "; }
 .map-layers { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.3rem 0.6rem; }
 .map-layers summary { cursor: pointer; min-height: 36px; display: flex; align-items: center; font-weight: 600; }
 .map-layers ul { list-style: none; margin: 0.25rem 0; padding: 0; }
@@ -190,3 +197,24 @@ blockquote { margin: 0.25rem 0; padding-left: 0.5rem; border-left: 3px solid var
   .map-wrap { height: 55vh; height: 55dvh; }
   .side { border-left: 0; border-top: 1px solid var(--border); }
 }
+
+/* PlaceSearch */
+.place-search { position: relative; }
+.place-search__list {
+  position: absolute; left: 0; right: 0; z-index: 600; margin: 2px 0 0; padding: 0; list-style: none;
+  max-height: 14rem; overflow-y: auto; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm);
+}
+.place-search__opt { padding: 0.4rem 0.6rem; cursor: pointer; }
+.place-search__opt.is-active { background: var(--surface-2); outline: 2px solid var(--focus); outline-offset: -2px; }
+
+/* Route panel additions */
+.point-field { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.4rem 0.6rem 0.6rem; margin: 0 0 0.5rem; }
+.point-field legend { font-weight: 600; padding: 0 0.25rem; }
+.link-button { background: none; border: 0; padding: 0.2rem 0; color: var(--link); text-decoration: underline; cursor: pointer; text-align: left; min-height: 32px; }
+.link-button:disabled { color: var(--muted); cursor: default; }
+.route-steps { margin: 0.5rem 0; }
+.route-steps summary { cursor: pointer; font-weight: 600; min-height: 36px; display: flex; align-items: center; }
+.route-steps ol { margin: 0.25rem 0; padding-left: 1.4rem; }
+.route-steps li { margin: 0.1rem 0; }
+.route-context { margin-top: 0.75rem; border-top: 1px solid var(--border); padding-top: 0.5rem; }
+.context-group--caution h4 { color: var(--fixture-fg); }

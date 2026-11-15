@@ -1,7 +1,8 @@
 import type { BarrierObservation, VerificationStatus } from "./barrierTypes";
 
 export type LatLon = { lat: number; lon: number };
-export type RouteProfile = "wheelchair_preference" | "pedestrian";
+export type RouteProfile = "wheelchair_preference" | "avoid_stairs" | "pedestrian";
+export type RouteStep = { instruction: string; distance_m: number; begin_index: number; street: string | null };
 export type NearbyDetail = { id: string; distance_m: number; match_method: string };
 
 export type RouteResult =
@@ -11,6 +12,16 @@ export type RouteResult =
       route: { type: "LineString"; coordinates: [number, number][] };
       distance_m: number;
       duration_s: number;
+      profile?: RouteProfile;
+      /** Provider turn-by-turn text (may be empty for older servers). */
+      steps?: RouteStep[];
+      /** Standard walking route for the same trip, only when the provider returned both. */
+      comparison?: { profile: "pedestrian"; distance_m: number; duration_s: number } | null;
+      /** Graph router only: what the route passes through. */
+      route_features?: { stairs: number; passages: number; open_areas: number; corridors: number; road_no_sidewalk_m: number } | null;
+      /** Set when the server fell back from the graph router to Valhalla. */
+      fallback_reason?: string | null;
+      data_note?: string | null;
       nearby_barriers: string[];
       nearby_details?: NearbyDetail[];
       nearby_status?: "ok" | "unavailable";
