@@ -1,5 +1,5 @@
 // Prepare a multi-photo blind review batch for city curb-ramp intersections.
-// Usage: npm run ai:photo-prep -- <outDir> [--n 40] [--per 4] [--batch 40]
+// Usage: npm run ai:photo-prep -- <outDir> [--n 40] [--per 4] [--batch 40] [--skip-checked]
 // Picks the N ramp-deficit intersections closest to the demo anchors; for each, up to `per`
 // perspective photos (one per approach quadrant, distinct capture sequences, camera facing the
 // node, 6–30 m away, newest first) + 1 spherical panorama. Writes shrunk JPEGs, manifest.json,
@@ -11,6 +11,7 @@ import { listObservations } from "@/lib/data/observations";
 import { STUDY_BBOX } from "@/lib/data/studyArea";
 import { haversineMeters } from "@/lib/data/geo";
 import { bearingDeg, isAllowedThumbUrl } from "@/lib/ai/mapillary";
+import { readImageryChecks } from "@/lib/ai/imageryChecks";
 import type { BarrierObservation } from "@/lib/data/types";
 
 /** Demo anchors: downtown core (Gaslamp/Civic Center) and the Golden Hill notice. */
@@ -78,7 +79,9 @@ async function main() {
     all.push(...r.data);
     cursor = r.next_cursor ?? r.meta?.next_cursor ?? undefined;
   } while (cursor);
-  const ramps = all.filter((o) => o.source_kind === "city_gis" && o.geometry.type === "Point");
+  // --skip-checked: leave out intersections that already have a multi-photo review.
+  const done = process.argv.includes("--skip-checked") ? readImageryChecks().checks : {};
+  const ramps = all.filter((o) => o.source_kind === "city_gis" && o.geometry.type === "Point" && !done[o.id]?.photo_votes);
   const targets: BarrierObservation[] = [];
   for (const a of ANCHORS) {
     const k = Math.round(n * a.share);
