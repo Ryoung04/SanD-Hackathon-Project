@@ -14,7 +14,7 @@ import NoticesPanel from "@/components/NoticesPanel";
 import PhotoReport from "@/components/PhotoReport";
 import SourcesPanel from "@/components/SourcesPanel";
 import { STUDY_BBOX } from "@/lib/data/studyArea";
-import { inBBox, requestRoute, type LatLon, type RouteProfile, type RouteResult } from "@/lib/ui/routeClient";
+import { inBBox, loadRouteObservations, requestRoute, type LatLon, type RouteProfile, type RouteResult } from "@/lib/ui/routeClient";
 
 const mapLoading = () => <div className="map map--loading">Loading map…</div>;
 const MapView2D = dynamic(() => import("@/components/MapView"), { ssr: false, loading: mapLoading });
@@ -78,6 +78,17 @@ export default function Home() {
     return () => { live = false; };
   }, [route]);
 
+  // Near-route records outside the loaded map view: fetch them so each warning shows its source.
+  const [routeObs, setRouteObs] = useState<BarrierObservation[]>([]);
+  useEffect(() => {
+    setRouteObs([]);
+    if (route?.status !== "route_available") return;
+    const ids = (route.nearby_details ?? []).map((d) => d.id);
+    let live = true;
+    loadRouteObservations(route.route.coordinates, ids).then((obs) => { if (live) setRouteObs(obs); });
+    return () => { live = false; };
+  }, [route]);
+
   const clearRoute = () => { routeSeq.current++; setStart(null); setEnd(null); setRoute(null); setRouting(false); setPicking(null); };
 
   const lastBBox = useRef<BBox | null>(null);
@@ -97,12 +108,17 @@ export default function Home() {
   useEffect(() => () => onBoundsChange.cancel(), [onBoundsChange]);
 
   const visible = useMemo(() => filterBySource(all, enabled), [all, enabled]);
+  const withRoute = useMemo(() => {
+    if (!routeObs.length) return all;
+    const have = new Set(all.map((o) => o.id));
+    return [...all, ...routeObs.filter((o) => !have.has(o.id))];
+  }, [all, routeObs]);
   const counts = useMemo(() => {
     const c: Partial<Record<SourceKind, number>> = {};
     for (const o of all) c[o.source_kind] = (c[o.source_kind] ?? 0) + 1;
     return c;
   }, [all]);
-  const selected = visible.find((o) => o.id === selectedId) ?? null;
+  const selected = filterBySource(withRoute, enabled).find((o) => o.id === selectedId) ?? null;
 
   const toggle = (k: SourceKind) =>
     setEnabled((prev) => {
@@ -140,7 +156,7 @@ export default function Home() {
           <RoutePlanner
             start={start} end={end} onStart={setStart} onEnd={setEnd} picking={picking} onPick={setPicking}
             result={route} loading={routing} onSubmit={submitRoute} onClear={clearRoute}
-            observations={all} onSelect={setSelectedId}
+            observations={withRoute} onSelect={setSelectedId}
             onSample={runSample} context={context} contextError={contextError} onFocus={onFocus}
           />
           <BarrierDetail obs={selected} onClose={() => setSelectedId(null)} />

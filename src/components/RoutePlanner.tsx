@@ -214,7 +214,7 @@ function RouteResultView({ result, observations, onSelect, context, contextError
                         <span>
                           {n.obs ? n.obs.label : n.id}
                           <span className="muted small">
-                            {n.obs ? ` · ${SOURCE_LABELS[n.obs.source_kind]}` : " · details not loaded"}
+                            {n.obs ? ` · ${SOURCE_LABELS[n.obs.source_kind]}` : " · record details could not be loaded"}
                             {Number.isFinite(n.distance_m) ? ` · ~${Math.round(n.distance_m)} m from route` : ""}
                           </span>
                         </span>

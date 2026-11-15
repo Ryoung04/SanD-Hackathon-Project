@@ -95,3 +95,37 @@ export function groupNearby(details: NearbyDetail[], observations: BarrierObserv
 
 export const formatDistance = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`);
 export const formatDuration = (s: number) => `${Math.max(1, Math.round(s / 60))} min`;
+
+type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
+
+/**
+ * Fetch the near-route records that aren't loaded for the current map view (the view list is capped),
+ * so every route warning shows its source. Pages /api/barriers over the route's bbox padded by ~pad_m.
+ * Best effort: returns whatever it found; ids it can't find stay "not loaded".
+ */
+export async function loadRouteObservations(
+  coords: [number, number][], ids: string[], fetchImpl: FetchLike = fetch, pad_m = 60, maxPages = 4,
+): Promise<BarrierObservation[]> {
+  const want = new Set(ids);
+  if (!want.size || !coords.length) return [];
+  const lats = coords.map((c) => c[1]), lons = coords.map((c) => c[0]);
+  const dLat = pad_m / 111_320;
+  const dLon = pad_m / (111_320 * Math.cos((((Math.min(...lats) + Math.max(...lats)) / 2) * Math.PI) / 180));
+  const bbox = [Math.min(...lons) - dLon, Math.min(...lats) - dLat, Math.max(...lons) + dLon, Math.max(...lats) + dLat]
+    .map((v) => v.toFixed(6)).join(",");
+  const found: BarrierObservation[] = [];
+  let cursor: string | null = null;
+  for (let page = 0; page < maxPages && want.size; page++) {
+    const q = `/api/barriers?bbox=${bbox}&limit=500${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`;
+    let body: { data?: BarrierObservation[]; meta?: { next_cursor?: string | null } };
+    try {
+      const res = await fetchImpl(q);
+      if (!res.ok) break;
+      body = await res.json();
+    } catch { break; }
+    for (const o of body.data ?? []) if (want.delete(o.id)) found.push(o);
+    cursor = body.meta?.next_cursor ?? null;
+    if (!cursor) break;
+  }
+  return found;
+}
