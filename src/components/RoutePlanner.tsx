@@ -26,12 +26,12 @@ export const STAIRS_TRIP = {
   end: { lat: 32.715073, lon: -117.166081 },
 };
 export type SampleTrip = typeof SAMPLE_TRIP;
-/** Demo record: City lists a missing curb ramp here, but street photos show at least one ramp (sources disagree). */
+/** Demo record (W Grape St & Albatross St): City lists a missing curb ramp here, but street photos show at least one ramp (sources disagree). */
 export const EXAMPLE_RECORD = {
   id: "city_gis:prowag2:3162",
   lat: 32.72614,
   lon: -117.16572,
-  label: "City lists a missing curb ramp, street photos show ramps (Little Italy)",
+  label: "City lists a missing curb ramp, street photos show ramps (West Grape St & Albatross St)",
 };
 
 const PROFILE_TEXT: Record<RouteProfile, string> = {

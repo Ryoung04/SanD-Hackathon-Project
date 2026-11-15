@@ -44,7 +44,7 @@ Live: **https://140-82-17-18.sslip.io** · Verified end to end 2026-11-15 ~09:00
 | S4 | Preference back to **Prefer wheelchair-friendly paths** → **Get route** | "Switch back, and the stairs are gone." |
 
 
-Optional strong example (if time): record `city_gis:prowag2:3162` (~32.7261, −117.1657, Little Italy): the City says 1 of 3 ramps is missing, but 2 of 4 street photos show a ramp. That's the "sources disagree" story.
+**Curb-ramp example (one click):** "See an example record: City lists a missing curb ramp, street photos show ramps (West Grape St & Albatross St)" → map pans there and opens the City record → **Explain evidence**: City says 1 of 3 ramps missing; 2 of 4 street photos (2024) show a ramp. Say: "Here the sources disagree: the City lists a missing ramp, but street photos show ramps. Beacon shows both, labeled, instead of picking one." Then open Map details → Ramps layer.
 
 ## Searching other places
 
