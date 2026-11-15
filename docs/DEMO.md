@@ -24,7 +24,7 @@ Live: **https://140-82-17-18.sslip.io** · Verified end to end 2026-11-15 ~09:00
 | # | Click | Say (suggested) |
 |---|---|---|
 | 1 | Nothing yet; point at the header bar | "Every marker is a public record. Beacon says *potential* barriers, and anywhere unmarked is unknown, never 'accessible'." |
-| 2 | **Try a sample trip: Santa Fe Depot → Horton Plaza Park** | "Say I'm in a wheelchair getting from the train station to Horton Plaza." |
+| 2 | **Try a sample trip: Santa Fe Depot → Horton Plaza Park** (first of the two sample links) | "Say I'm in a wheelchair getting from the train station to Horton Plaza." |
 | 3 | Point at route summary (1.06 km, building passage, plazas, *no mapped stairs*) | "We route on our own sidewalk graph from OpenStreetMap, with slopes from USGS lidar, and avoid mapped stairs." |
 | 4 | Scroll to **Potential barriers near this route (12)** | "Then Beacon checks every record within 30 m of the route: 3 official city records and 9 resident 311 reports. Each one is labeled with where it came from." |
 | 5 | Click **Intersection missing accessible pedestrian signals at 6 crossings (~9 m)** | "This is from the City's own inventory. You see the source, when it was updated, how precise the location is, and that it's not verified on the ground." |
@@ -33,6 +33,16 @@ Live: **https://140-82-17-18.sslip.io** · Verified end to end 2026-11-15 ~09:00
 | 8 | **Map details** → point at Ramps layer / legend "Detailed access feed: 49" | "We also reviewed 369 street photos with AI at the City's missing-ramp intersections. 49 show a ramp, which means the city record may be outdated. We label all of that as AI, unverified." |
 | 9 | **Construction news** panel (optional, 5 s) | "Bright Data pulls local construction news and we match it to city permits." |
 | 10 | **3D view** (+ **Hills on**) | "Hills and 3D buildings help you see slopes and the area before you go." |
+
+### Stair-avoidance segment (shows the routing, ~25 s; do this right after step 4 or after step 10)
+
+| # | Click | Say (suggested) |
+|---|---|---|
+| S1 | **Try a sample trip: Waterfront Park → US Federal Courthouse (avoids stairs)** (preference: *Prefer wheelchair-friendly paths*) | "Now say I need to get from Waterfront Park to the federal courthouse." |
+| S2 | Point at the bold line: *"The standard walking route takes 3 mapped stairways; this route avoids them."* (1.56 km, ~26 min) | "A normal walking route takes three sets of stairs. Beacon finds a step-free route instead: about 200 m longer, with no mapped stairs." |
+| S3 | Preference → **Standard walking** → **Get route** ("This route uses 3 stairways", 1.36 km) | "Here's the route most map apps would give you: shorter, but through three staircases." |
+| S4 | Preference back to **Prefer wheelchair-friendly paths** → **Get route** | "Switch back, and the stairs are gone." |
+
 
 Optional strong example (if time): record `city_gis:prowag2:3162` (~32.7261, −117.1657, Little Italy): the City says 1 of 3 ramps is missing, but 2 of 4 street photos show a ramp. That's the "sources disagree" story.
 
