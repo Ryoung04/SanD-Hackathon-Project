@@ -165,6 +165,12 @@ function RouteResultView({ result, observations, onSelect, context, contextError
         </p>
       )}
       {result.route_features && <p className="small">{describeFeatures(result.route_features, result.profile)}</p>}
+      {result.road_policy === "roads_last_resort" && (
+        <p className="caveat small" role="note">
+          <strong>Uses streets as a last resort.</strong> No route was found on sidewalks and paths alone
+          {result.road_reason ? ` (${result.road_reason.charAt(0).toLowerCase()}${result.road_reason.slice(1)})` : ""}, so this route keeps street walking to the minimum.
+        </p>
+      )}
       {result.fallback_reason && <p className="muted small">Used the backup router: {result.fallback_reason}.</p>}
       <p className="caveat small">{result.coverage_note}. Unmarked segments are unknown, not accessible.{result.data_note ? ` ${result.data_note}` : ""}</p>
 
@@ -237,6 +243,7 @@ function describeFeatures(f: NonNullable<Extract<RouteResult, { status: "route_a
   if (f.corridors) parts.push(`uses ${n(f.corridors, "indoor corridor", "indoor corridors")}`);
   if (f.open_areas) parts.push(`crosses ${n(f.open_areas, "open plaza area", "open plaza areas")}`);
   if (f.road_no_sidewalk_m) parts.push(`~${f.road_no_sidewalk_m} m along streets with no sidewalk mapped`);
+  if (f.road_with_sidewalk_m) parts.push(`~${f.road_with_sidewalk_m} m along streets whose sidewalks aren't mapped separately`);
   const stairNote = profile && profile !== "pedestrian" ? " No mapped stairs are used." : "";
   return parts.length ? `This route ${parts.join(", ")}.${stairNote}` : `Sidewalks, footpaths and crosswalks only.${stairNote}`;
 }

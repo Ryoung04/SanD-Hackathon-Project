@@ -25,6 +25,9 @@ export type PlannedRoute =
       duration_s: number;
       steps: RouteStep[];
       route_features: GraphRouteFeatures | null;
+      /** Graph router only: "roads_last_resort" when no walkway-only route exists. */
+      road_policy: "walkways_only" | "roads_last_resort" | null;
+      road_reason: string | null;
       /** Set when auto fell back to Valhalla; explains why. */
       fallback_reason: string | null;
     }
@@ -48,5 +51,5 @@ export async function planRoute(req: RouteRequest, router: RouterChoice = "auto"
   }
   const v = await fetchRoute(req, fetchImpl);
   if (!v.ok) return { ok: false, provider: v.provider, reason: fallback ? `${fallback}; fallback also failed: ${v.reason}` : v.reason };
-  return { ...v, route_features: null, fallback_reason: fallback };
+  return { ...v, route_features: null, road_policy: null, road_reason: null, fallback_reason: fallback };
 }

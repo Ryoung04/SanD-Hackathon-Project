@@ -60,3 +60,33 @@ test("real map: sample trip Santa Fe Depot -> Horton Plaza Park routes for all p
     if (r.ok) t.diagnostic(`${profile}: ${r.distance_m} m, features ${JSON.stringify(r.route_features)}`);
   }
 });
+
+// Regression (road walking): before the fix this trip walked 267 m down the State Street
+// centerline although its sidewalk is mapped; 80% of random routes used roads.
+test("real map: 9th Ave/Broadway area -> State St trip does not walk down the road centerline", { skip: !HAVE_GRAPH && "no graph file" }, (t) => {
+  const g = loadGraph()!;
+  const r = routeOnGraph(g, { lon: -117.156766, lat: 32.721589 }, { lon: -117.166767, lat: 32.725537 }, "pedestrian");
+  soft(t, r.ok, `no route: ${!r.ok && r.reason}`);
+  if (!r.ok) return;
+  const road = r.route_features.road_with_sidewalk_m + r.route_features.road_no_sidewalk_m;
+  t.diagnostic(`${r.distance_m} m total, ${road} m on road centerlines`);
+  soft(t, road < 100, `walks ${road} m on road centerlines`);
+});
+
+test("real map: across 100 fixed random trips, under 10% of walking distance is on road centerlines", { skip: !HAVE_GRAPH && "no graph file" }, (t) => {
+  const g = loadGraph()!;
+  const [w, s, e, n] = [-117.175, 32.712, -117.15, 32.73];
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  let total = 0, road = 0;
+  for (let i = 0; i < 100; i++) {
+    const a = { lon: w + rnd() * (e - w), lat: s + rnd() * (n - s) }, b = { lon: w + rnd() * (e - w), lat: s + rnd() * (n - s) };
+    const r = routeOnGraph(g, a, b, "pedestrian");
+    if (!r.ok) continue;
+    total += r.distance_m;
+    road += r.route_features.road_with_sidewalk_m + r.route_features.road_no_sidewalk_m;
+  }
+  const pct = (100 * road) / Math.max(1, total);
+  t.diagnostic(`road share ${pct.toFixed(1)}% of ${total} m (remaining use is mostly streets whose sidewalks aren't mapped in OSM)`);
+  soft(t, pct < 10, `road share ${pct.toFixed(1)}%`);
+});

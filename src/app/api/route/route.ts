@@ -54,6 +54,8 @@ export async function POST(req: Request) {
     router,
     steps: r.steps,
     route_features: r.route_features,
+    road_policy: r.road_policy,
+    road_reason: r.road_reason,
     fallback_reason: r.fallback_reason,
     data_note: r.provider === "accesspath-osm-graph" ? GRAPH_NOTE : null,
     // Only compare like with like (same provider), so the difference is meaningful.

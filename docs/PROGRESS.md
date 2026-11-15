@@ -1,5 +1,20 @@
 # Progress
 
+## Owner B — Two-pass road policy: roads only as a last resort (2026-11-14)
+- **Why:** road cost was a flat multiplier, so for wheelchair profiles a steep sidewalk (x5/x10 above 12%) could cost more than a road (x2.5–4), and the router chose the road.
+- **Design** (`src/lib/routing/graphRouter.ts`, `routeOnGraph` → `searchOnce`, `withRoadPolicy`):
+  - Pass 1 `walkways_only`: road centerlines are blocked for both snapping and search, so slope only chooses between walkways (a gentler detour wins, otherwise the steep sidewalk is used).
+  - Pass 2 `roads_last_resort`: runs only if pass 1 fails (unmapped sidewalk gap, a stairs-only link for wheelchair users, a point near a road only). Each road metre costs `ROAD_LAST_RESORT_WEIGHT` (1000) walkway metres, so road distance is minimised first. Stairs stay blocked for wheelchair users.
+- **API/UI (additive):** `road_policy` (`walkways_only|roads_last_resort|null` for Valhalla) and `road_reason` in the `/api/route` response; RoutePlanner shows a "Uses streets as a last resort" note.
+- **Result (100 random downtown trips):** road share 1.0% walking and 1.2% wheelchair (was 5.9%). Pass 2 is needed on 15–18 trips; ~18–24 ms per trip.
+- **Tests:** `npm run test:ui`, 157/157 pass (5 new two-pass tests in `tests/ui/graphRouter.test.ts`). `npx tsc --noEmit` is clean.
+
+## Owner B — Fix: router preferred roads (2026-11-14)
+- **Cause:** walking a road centerline tagged sidewalk=both cost only 1.1x a mapped sidewalk, and start/end points snapped onto road centerlines. Result: 110 of 138 random routes used roads (e.g. 267 m down State Street).
+- **Fix** (`src/lib/routing/graphRouter.ts`): road kinds are a last resort. Costs: road_sidewalk 2x, road_unknown 3x, service 2.5x, road_separate 10x (wheelchair profiles higher). Snapping counts road centerlines as 30 m farther away (`ROAD_SNAP_PENALTY_M`). New `route_features.road_with_sidewalk_m`.
+- **Result:** 5.9% of route distance is on roads, mostly streets whose sidewalks aren't mapped in OSM (43–61% coverage on 9th Ave, C St, Kettner, State, India).
+- **Tests:** 4 regression unit tests in `tests/ui/graphRouter.test.ts` and 2 soft real-map checks in `tests/ui/routingPoints.test.ts`. `npm run test:ui` 152 pass; build clean.
+
 ## Owner B — AccessPath graph router + elevation slopes (2026-11-14)
 - **Router:** `POST /api/route` now routes on our own OSM walking graph first, with Valhalla as the fallback.
   - The graph is `data/derived/downtown-graph.json` (19,307 nodes, 30,224 edges): 153 stairways, 79 building passages, 63 indoor corridors, 6,306 straight links across open plazas.

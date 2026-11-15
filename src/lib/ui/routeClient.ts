@@ -18,7 +18,10 @@ export type RouteResult =
       /** Standard walking route for the same trip, only when the provider returned both. */
       comparison?: { profile: "pedestrian"; distance_m: number; duration_s: number } | null;
       /** Graph router only: what the route passes through. */
-      route_features?: { stairs: number; passages: number; open_areas: number; corridors: number; road_no_sidewalk_m: number } | null;
+      route_features?: { stairs: number; passages: number; open_areas: number; corridors: number; road_no_sidewalk_m: number; road_with_sidewalk_m?: number } | null;
+      /** "roads_last_resort": no route exists on sidewalks/paths alone, so streets were used minimally. */
+      road_policy?: "walkways_only" | "roads_last_resort" | null;
+      road_reason?: string | null;
       /** Set when the server fell back from the graph router to Valhalla. */
       fallback_reason?: string | null;
       data_note?: string | null;

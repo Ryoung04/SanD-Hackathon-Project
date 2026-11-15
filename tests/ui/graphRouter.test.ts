@@ -173,3 +173,114 @@ test("planRoute graph-only: off-network point fails without Valhalla", async () 
   const r = await planRoute({ start: at(0, 0), end: at(900, 900), profile: "pedestrian" }, "graph", v.f, () => STAIRS);
   assert.ok(!r.ok && v.calls.length === 0);
 });
+
+// ---------- regression: router must not prefer walking in the road ----------
+// Layout (x east, y north; 1 unit ≈ 9-11 m):
+//   sidewalk  (0,1) ------------------------------- (40,1)
+//               |  crossing                             | crossing
+//   road      (0,0) ------------------------------- (40,0)   <- centerline, tagged sidewalk=both
+// The sidewalk bends away (setback) so it is ~15% longer than walking down the road; walking the
+// road means walking in the street. This reproduced the bug (road_sidewalk cost was 1.1x).
+const ROADSIDE = graph(
+  [[0, 0], [40, 0], [0, 1], [40, 1], [20, 12]], // sidewalk bends out to (20,12): ~1.15x the road length
+  [
+    { kind: "road_sidewalk", path: [0, 1], name: "State Street" },
+    { kind: "sidewalk", path: [2, 4, 3] },
+    { kind: "crossing", path: [0, 2] },
+    { kind: "crossing", path: [1, 3] },
+  ],
+);
+
+test("regression: walking prefers the mapped sidewalk over a parallel road centerline", () => {
+  for (const profile of ["pedestrian", "wheelchair_preference", "avoid_stairs"] as const) {
+    const r = routeOnGraph(ROADSIDE, at(0, 1), at(40, 1), profile);
+    assert.ok(r.ok, profile);
+    assert.deepEqual(kindsUsed(ROADSIDE, r), ["sidewalk"], `${profile} walked in the road`);
+  }
+});
+
+test("regression: a point closer to the road centerline still snaps to the nearby sidewalk", () => {
+  // Point at y=0.3 (~3 m from road, ~8 m from sidewalk).
+  const r = routeOnGraph(ROADSIDE, at(5, 0.3), at(35, 0.3), "pedestrian");
+  assert.ok(r.ok);
+  assert.ok(!kindsUsed(ROADSIDE, r).includes("road_sidewalk"), `used: ${kindsUsed(ROADSIDE, r)}`);
+});
+
+test("regression: road with sidewalk=separate is avoided even when the sidewalk detour is 2x longer", () => {
+  const g = graph(
+    [[0, 0], [20, 0], [0, 10], [20, 10]],
+    [{ kind: "road_separate", path: [0, 1] }, { kind: "sidewalk", path: [0, 2, 3, 1] }],
+  );
+  const r = routeOnGraph(g, at(0, 0), at(20, 0), "pedestrian");
+  assert.ok(r.ok && !kindsUsed(g, r).includes("road_separate"));
+});
+
+test("roads are still usable as a last resort when no walkway exists", () => {
+  const g = graph([[0, 0], [30, 0]], [{ kind: "road_unknown", path: [0, 1], name: "Alley" }]);
+  const r = routeOnGraph(g, at(0, 0), at(30, 0), "pedestrian");
+  assert.ok(r.ok && r.route_features.road_no_sidewalk_m > 0);
+});
+
+// ---------- two-pass road policy: roads only when no walkway-only route exists ----------
+test("two-pass: wheelchair takes a very steep sidewalk rather than a flat parallel road", () => {
+  // Steep sidewalk (edge 0, 15%) vs flat road. Slope cost (x5/x10) must never be traded for road.
+  const g = graph(
+    [[0, 1], [30, 1], [0, 0], [30, 0]],
+    [{ kind: "sidewalk", path: [0, 1] }, { kind: "road_sidewalk", path: [2, 3] }, { kind: "crossing", path: [0, 2] }, { kind: "crossing", path: [1, 3] }],
+    {}, { 0: 15 },
+  );
+  for (const profile of ["wheelchair_preference", "avoid_stairs"] as const) {
+    const r = routeOnGraph(g, at(0, 1), at(30, 1), profile);
+    assert.ok(r.ok && r.road_policy === "walkways_only", profile);
+    assert.ok(!kindsUsed(g, r).includes("road_sidewalk"), `${profile} used the road`);
+  }
+});
+
+test("two-pass: a gentler walkway detour beats the steep sidewalk; the road is never used", () => {
+  // Steep direct sidewalk (edge 0, 15%), gentle detour via (15,10), flat road below.
+  const g = graph(
+    [[0, 1], [30, 1], [15, 10], [0, 0], [30, 0]],
+    [{ kind: "sidewalk", path: [0, 1] }, { kind: "footway", path: [0, 2, 1] }, { kind: "road_sidewalk", path: [3, 4] }, { kind: "crossing", path: [0, 3] }, { kind: "crossing", path: [1, 4] }],
+    {}, { 0: 15 },
+  );
+  const r = routeOnGraph(g, at(0, 1), at(30, 1), "wheelchair_preference");
+  assert.ok(r.ok && r.road_policy === "walkways_only");
+  assert.deepEqual(kindsUsed(g, r), ["footway"]);
+});
+
+test("two-pass: road used only as last resort (e.g. a missing link) and reported with the reason", () => {
+  // Sidewalks on both sides of a gap (think broken elevator); only a road bridges it.
+  const g = graph(
+    [[0, 1], [10, 1], [20, 1], [30, 1], [10, 0], [20, 0]],
+    [{ kind: "sidewalk", path: [0, 1] }, { kind: "sidewalk", path: [2, 3] }, { kind: "road_unknown", path: [4, 5] }, { kind: "crossing", path: [1, 4] }, { kind: "crossing", path: [5, 2] }],
+  );
+  const r = routeOnGraph(g, at(0, 1), at(30, 1), "wheelchair_preference");
+  assert.ok(r.ok && r.road_policy === "roads_last_resort", r.ok ? r.road_policy : r.reason);
+  assert.ok(r.ok && /sidewalks and paths only/.test(r.road_reason ?? ""), r.ok ? String(r.road_reason) : "");
+});
+
+test("two-pass: last resort minimises road metres first, even if the whole route is longer", () => {
+  // Option A: ~280 m of road, direct. Option B: ~700 m walkway detour with a ~19 m alley.
+  const g = graph(
+    [[0, 0], [30, 0], [0, 20], [14, 20], [16, 20], [30, 20]],
+    [
+      { kind: "road_sidewalk", path: [0, 1], name: "Long Road" },
+      { kind: "sidewalk", path: [0, 2, 3] }, { kind: "service", path: [3, 4], name: "Short Alley" }, { kind: "sidewalk", path: [4, 5, 1] },
+    ],
+  );
+  const r = routeOnGraph(g, at(0, 0), at(30, 0), "pedestrian");
+  assert.ok(r.ok && r.road_policy === "roads_last_resort");
+  assert.ok(r.ok && !kindsUsed(g, r).includes("road_sidewalk"), `used ${kindsUsed(g, r)}`);
+  assert.ok(r.ok && r.route_features.road_no_sidewalk_m + r.route_features.road_with_sidewalk_m < 25);
+});
+
+test("two-pass: wheelchair stairs-only link is bridged by road as a last resort, never by stairs", () => {
+  const g = graph(
+    [[0, 1], [10, 1], [20, 1], [10, 0], [20, 0]],
+    [{ kind: "sidewalk", path: [0, 1] }, { kind: "steps", path: [1, 2] }, { kind: "road_unknown", path: [3, 4] }, { kind: "crossing", path: [1, 3] }, { kind: "crossing", path: [4, 2] }],
+  );
+  const walk = routeOnGraph(g, at(0, 1), at(20, 1), "pedestrian");
+  assert.ok(walk.ok && walk.road_policy === "walkways_only" && kindsUsed(g, walk).includes("steps"));
+  const chair = routeOnGraph(g, at(0, 1), at(20, 1), "avoid_stairs");
+  assert.ok(chair.ok && chair.road_policy === "roads_last_resort" && !kindsUsed(g, chair).includes("steps"));
+});
